@@ -1,0 +1,4 @@
+(library
+ (name wglib)
+ (libraries ctypes ctypes-foreign )
+ )
