@@ -39,6 +39,7 @@
             buildInputs = with pkgs.ocamlPackages; [
                 ctypes
                 ctypes-foreign
+                pkgs.libffi
             ];
           };
 
