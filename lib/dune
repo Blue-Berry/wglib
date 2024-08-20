@@ -1,4 +1,14 @@
 (library
  (name wglib)
  (libraries ctypes ctypes-foreign )
+ ;(foreign_stubs
+  ; (language c)
+  ; (names wireguard))
+  (extra_objects wireguard)
  )
+
+(rule
+ (targets wireguard.o)
+ (deps wireguard.c)
+ (action
+  (run ocamlopt %{deps})))

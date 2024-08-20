@@ -1,4 +1,4 @@
 (executable
  (public_name wglib)
  (name main)
- (libraries wglib))
+ (libraries wglib ctypes.foreign))

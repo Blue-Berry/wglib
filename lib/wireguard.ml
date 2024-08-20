@@ -2,7 +2,7 @@ open Ctypes
 
 type wg_key
 
-let wg_key = Ctypes.array 32 uint8_t
+let wg_key = ptr uint8_t
 
 type wg_device_flags
 
@@ -69,10 +69,10 @@ end
 open Foreign
 open Wg_device
 
-let wg_set_device = foreign "wg_set_device" (wg_device @-> returning int)
+let wg_set_device = foreign "wg_set_device" (ptr wg_device @-> returning int)
 
 let wg_get_device =
-  foreign "wg_get_device" (wg_device @-> string @-> returning int)
+  foreign "wg_get_device" (ptr wg_device @-> string @-> returning int)
 
 let wg_add_device = foreign "wg_add_device" (string @-> returning int)
 let wg_del_device = foreign "wg_del_device" (string @-> returning int)

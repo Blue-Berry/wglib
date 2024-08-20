@@ -1,5 +1,4 @@
 open Ctypes
-open Foreign
 
 (* Define sockaddr structure *)
 module Sockaddr = struct
