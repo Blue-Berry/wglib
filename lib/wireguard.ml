@@ -69,6 +69,7 @@ end
 open Foreign
 open Wg_device
 
+(* int wg_set_device(wg_device *dev); *)
 let wg_set_device = foreign "wg_set_device" (ptr wg_device @-> returning int)
 
 let wg_get_device =
@@ -86,7 +87,8 @@ let wg_list_device_names =
 (* bool wg_key_is_zero(const wg_key key); *)
 
 let wg_generate_public_key =
-  foreign "wg_generate_public_key" (wg_key @-> wg_key @-> returning void)
+  foreign "wg_generate_public_key"
+    (wg_key @-> Ctypes_static.const wg_key @-> returning void)
 
 let wg_generate_private_key =
   foreign "wg_generate_private_key" (wg_key @-> returning void)
