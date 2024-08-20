@@ -41,6 +41,21 @@ module Wg_peer = struct
   let preshared_key = field wg_peer "preshared_key" wg_key
   let endpoint = field wg_peer "endpoint" Wg_endpoint.wg_endpoint
   let () = seal wg_peer
+
+  (* enum wg_peer_flags { *)
+  (* 	WGPEER_REMOVE_ME = 1U << 0, *)
+  (* 	WGPEER_REPLACE_ALLOWEDIPS = 1U << 1, *)
+  (* 	WGPEER_HAS_PUBLIC_KEY = 1U << 2, *)
+  (* 	WGPEER_HAS_PRESHARED_KEY = 1U << 3, *)
+  (* 	WGPEER_HAS_PERSISTENT_KEEPALIVE_INTERVAL = 1U << 4 *)
+  (* }; *)
+  module Wg_peer_flags = struct
+    let wgpeer_remove_me = 1 lsl 0
+    let wgpeer_replace_allowedips = 1 lsl 1
+    let wgpeer_has_public_key = 1 lsl 2
+    let wgpeer_has_preshared_key = 1 lsl 3
+    let wgpeer_has_persistent_keepalive_interval = 1 lsl 4
+  end
 end
 
 module Wg_device = struct
@@ -64,6 +79,21 @@ module Wg_device = struct
   let first_peer = field wg_device "first_peer" (ptr Wg_peer.wg_peer)
   let last_peer = field wg_device "last_peer" (ptr Wg_peer.wg_peer)
   let () = seal wg_device
+
+  (* enum wg_device_flags { *)
+  (* 	WGDEVICE_REPLACE_PEERS = 1U << 0, *)
+  (* 	WGDEVICE_HAS_PRIVATE_KEY = 1U << 1, *)
+  (* 	WGDEVICE_HAS_PUBLIC_KEY = 1U << 2, *)
+  (* 	WGDEVICE_HAS_LISTEN_PORT = 1U << 3, *)
+  (* 	WGDEVICE_HAS_FWMARK = 1U << 4 *)
+  (* }; *)
+  module Wg_device_flags = struct
+    let wgdevice_replace_peers = 1 lsl 0
+    let wgdevice_has_private_key = 1 lsl 1
+    let wgdevice_has_public_key = 1 lsl 2
+    let wgdevice_has_listen_port = 1 lsl 3
+    let wgdevice_has_fwmark = 1 lsl 4
+  end
 end
 
 open Foreign

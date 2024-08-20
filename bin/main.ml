@@ -11,17 +11,23 @@ open Wglib.Wireguard
 
 let () =
   let new_peer = Ctypes.make Wglib.Wireguard.Wg_peer.wg_peer in
-  let flags = 1 lsl 2 in
-  let flags = flags lor (1 lsl 1) in
-  let flags = Unsigned.UInt32.of_int flags in
+  let flags =
+    Unsigned.UInt32.of_int
+      (Wg_peer.Wg_peer_flags.wgpeer_has_public_key
+     lor Wg_peer.Wg_peer_flags.wgpeer_replace_allowedips)
+  in
   let () = Ctypes.setf new_peer Wglib.Wireguard.Wg_peer.flags flags in
   let new_device = Ctypes.make Wglib.Wireguard.Wg_device.wg_device in
-  let () = Ctypes.setf new_device Wglib.Wireguard.Wg_device.name "wgtest0" in
+  let () = Ctypes.setf new_device Wglib.Wireguard.Wg_device.name "wgtest1" in
   let () =
     Ctypes.setf new_device Wglib.Wireguard.Wg_device.listen_port
       (Unsigned.UInt16.of_int 1234)
   in
-  let flags = (1 lsl 1) lor (1 lsl 3) |> Unsigned.UInt32.of_int in
+  let flags =
+    Wg_device.Wg_device_flags.wgdevice_has_private_key
+    lor Wg_device.Wg_device_flags.wgdevice_has_listen_port
+    |> Unsigned.UInt32.of_int
+  in
   let () =
     Ctypes.setf new_device Wglib.Wireguard.Wg_device.wg_device_flags flags
   in
@@ -54,6 +60,6 @@ let () =
   let () = print_endline (Ctypes.getf new_device Wg_device.name) in
   let add = wg_add_device (Ctypes.getf new_device Wg_device.name) in
   let () = print_endline (string_of_int add) in
-  let set = wg_set_device new_device in
+  let set = wg_set_device (Ctypes.addr new_device) in
   let () = print_endline (string_of_int set) in
   ()
