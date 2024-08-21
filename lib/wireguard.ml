@@ -2,7 +2,7 @@ open Ctypes
 
 type wg_key
 
-let wg_key = ptr uint8_t
+let wg_key = ptr uchar
 
 type wg_device_flags
 
@@ -61,10 +61,16 @@ end
 module Wg_device = struct
   (* typedef struct wg_device { *)
   (* 	char name[IFNAMSIZ]; *)
-  (* 	enum wg_device_flags flags; *)
-  (* 	wg_key public_key; *)
-  (* 	wg_key private_key; *)
-  (* 	uint16_t listen_port; *)
+  (* 	uint32_t ifindex; *)
+
+  (* enum wg_device_flags flags; *)
+
+  (* wg_key public_key; *)
+  (* wg_key private_key; *)
+
+  (* uint32_t fwmark; *)
+  (* uint16_t listen_port; *)
+
   (* 	struct wg_peer *first_peer, *last_peer; *)
   (* } wg_device; *)
 
@@ -72,9 +78,11 @@ module Wg_device = struct
 
   let wg_device : wg_device structure typ = structure "wg_device"
   let name = field wg_device "name" string
-  let wg_device_flags = field wg_device "flags" uint32_t
+  let ifindex = field wg_device "ifindex" uint32_t
+  let wg_device_flags = field wg_device "flags" int64_t
   let public_key = field wg_device "public_key" wg_key
   let private_key = field wg_device "private_key" wg_key
+  let fwmark = field wg_device "fwmark" uint32_t
   let listen_port = field wg_device "listen_port" uint16_t
   let first_peer = field wg_device "first_peer" (ptr Wg_peer.wg_peer)
   let last_peer = field wg_device "last_peer" (ptr Wg_peer.wg_peer)
@@ -125,3 +133,8 @@ let wg_generate_private_key =
 
 let wg_generate_preshared_key =
   foreign "wg_generate_preshared_key" (wg_key @-> returning void)
+
+(* void wg_key_to_base64(wg_key_b64_string base64, const wg_key key); *)
+let wg_key_to_base64 =
+  foreign "wg_key_to_base64"
+    (ptr Ctypes.char @-> Ctypes.const wg_key @-> returning void)
