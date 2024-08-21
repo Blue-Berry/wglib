@@ -1,9 +1,9 @@
 (library
  (name wglib)
  (libraries ctypes ctypes-foreign )
- ;(foreign_stubs
-  ; (language c)
-  ; (names wireguard))
+ ; (foreign_stubs
+ ;  (language c)
+ ;  (names wireguard))
   (extra_objects wireguard)
  )
 
