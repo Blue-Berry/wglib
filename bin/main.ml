@@ -30,15 +30,15 @@ let () =
 
 let () =
   print_endline
-    ("Port: "
-    ^ (Ctypes.getf device Wglib.Wireguard.Wg_device.listen_port
-      |> Unsigned.UInt16.to_string))
-
-let () =
-  print_endline
     ("Fwmark:"
     ^ (Ctypes.getf device Wglib.Wireguard.Wg_device.fwmark
       |> Unsigned.UInt32.to_string))
+
+let () =
+  print_endline
+    ("Port: "
+    ^ (Ctypes.getf device Wglib.Wireguard.Wg_device.listen_port
+      |> Unsigned.UInt16.to_string))
 
 let new_device = Ctypes.make Wglib.Wireguard.Wg_device.wg_device
 

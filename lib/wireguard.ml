@@ -77,29 +77,15 @@ module Wg_device = struct
   type wg_device
 
   let wg_device : wg_device structure typ = structure "wg_device"
-
-  (* let name = field wg_device "name" char *)
-  (* let name1 = field wg_device "name" char *)
-  (* let name2 = field wg_device "name" char *)
-  (* let name3 = field wg_device "name" char *)
-  (* let name4 = field wg_device "name" char *)
-  (* let name5 = field wg_device "name" char *)
-  (* let name6 = field wg_device "name" char *)
-  (* let name7 = field wg_device "name" char *)
-  (* let name8 = field wg_device "name" char *)
-  (* let name9 = field wg_device "name" char *)
-  (* let name10 = field wg_device "name" char *)
-  (* let name11 = field wg_device "name" char *)
-  (* let name12 = field wg_device "name" char *)
-  (* let name13 = field wg_device "name" char *)
-  (* let name14 = field wg_device "name" char *)
-  (* let name15 = field wg_device "name" char *)
-  (* let name16 = field wg_device "name" char *)
   let name = Array.init 16 (fun _ -> field wg_device "name" char)
   let ifindex = field wg_device "ifindex" uint32_t
   let flags = field wg_device "flags" uint16_t
-  let public_key = field wg_device "public_key" wg_key
-  let private_key = field wg_device "private_key" wg_key
+
+  (* let public_key = field wg_device "public_key" wg_key *)
+  let public_key = Array.init 32 (fun _ -> field wg_device "public_key" uchar)
+
+  (* let private_key = field wg_device "private_key" wg_key *)
+  let private_key = Array.init 32 (fun _ -> field wg_device "private_key" uchar)
   let fwmark = field wg_device "fwmark" uint32_t
   let listen_port = field wg_device "listen_port" uint16_t
   let first_peer = field wg_device "first_peer" (ptr Wg_peer.wg_peer)

@@ -1768,12 +1768,12 @@ void wg_generate_preshared_key(wg_key preshared_key)
 
  wg_device *wg_device_new(void){
      wg_device *new_device = calloc(1, sizeof(wg_device));
-        new_device->flags = 10;
-        new_device->listen_port = 1;
-        new_device->fwmark = 1;
+        new_device->flags = 2;
+        new_device->listen_port = 4;
+        new_device->fwmark = 3;
         new_device->first_peer = NULL;
         new_device->last_peer = NULL;
-        new_device->ifindex = 2;
+        new_device->ifindex = 1;
         new_device->name[0] = '0';
         new_device->name[1] = '1';
         new_device->name[2] = '2';
