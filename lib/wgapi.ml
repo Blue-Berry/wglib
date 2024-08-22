@@ -41,15 +41,16 @@ module Peer = struct
   open Ctypes
 
   (* Note: does this need to be a pointer? *)
-  type t = Wg_peer.wg_peer structure
+  type s = Wg_peer.wg_peer structure
+  type t = s ptr
   (* TODO: Implement *)
 
   let list_from_start_stop (start : t) (stop : t) =
     let rec loop acc current =
-      if addr current == addr stop then acc
+      if current == stop then acc
       else
-        let next = getf current Wg_peer.next_peer in
-        loop (current :: acc) !@next
+        let next = getf !@current Wg_peer.next_peer in
+        loop (current :: acc) next
     in
     loop [] start
 end
@@ -143,12 +144,12 @@ module Device = struct
     let () =
       match device.peer |> Base.List.hd with
       | None -> ()
-      | Some peer -> setf cdevice Wg_device.first_peer (addr peer)
+      | Some peer -> setf cdevice Wg_device.first_peer peer
     in
     let () =
       match device.peer |> Base.List.last with
       | None -> ()
-      | Some peer -> setf cdevice Wg_device.last_peer (addr peer)
+      | Some peer -> setf cdevice Wg_device.last_peer peer
     in
 
     cdevice
@@ -227,6 +228,8 @@ module Device = struct
     | _ ->
         let peers = Peer.list_from_start_stop !@start_peer !@stop_peer in
         { device with peer = peers }
+
+  (* Note: when sending peers they need to be stored in stable memory (bigarray, CArray, malloc, Ctypes.allocate) *)
 
   (* Wireguard.Wg_device.Wg_device_flags.wgdevice_replace_peers <- Used to replace peers instead of adding them *)
 end
