@@ -1,6 +1,20 @@
 open Ctypes
 open Wglib.Wireguard
 
+let new_peer = make Wg_peer.wg_peer
+let () = setf new_peer Wg_peer.flags (Unsigned.UInt16.of_int 6)
+
+let () =
+  let private_key = Wglib.Wgapi.Key.generate_private_key () in
+  let public_key = Wglib.Wgapi.Key.generate_public_key private_key in
+  let () =
+    CArray.iteri
+      (fun i c ->
+        Ctypes.setf new_peer (Array.get Wglib.Wireguard.Wg_peer.public_key i) c)
+      public_key
+  in
+  ()
+
 let device = make Wg_device.wg_device
 
 let () =
@@ -20,6 +34,8 @@ let () =
         Ctypes.setf device (Array.get Wglib.Wireguard.Wg_device.private_key i) c)
       private_key
   in
+  let () = setf device Wg_device.first_peer (Ctypes.addr new_peer) in
+  let () = setf device Wg_device.last_peer (Ctypes.addr new_peer) in
   ()
 
 let () =

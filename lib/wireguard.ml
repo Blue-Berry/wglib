@@ -6,6 +6,19 @@ let wg_key = ptr uchar
 
 type wg_device_flags
 
+module TimeSpec64 = struct
+  (*   struct timespec64 { *)
+  (* 	int64_t tv_sec; *)
+  (* 	int64_t tv_nsec; *)
+  (*   }; *)
+  type timespec64
+
+  let timespec64 : timespec64 structure typ = structure "timespec64"
+  let tv_sec = field timespec64 "tv_sec" int64_t
+  let tv_nsec = field timespec64 "tv_nsec" int64_t
+  let () = seal timespec64
+end
+
 module Wg_endpoint = struct
   (* typedef union wg_endpoint { *)
   (* 	struct sockaddr addr; *)
@@ -22,24 +35,89 @@ module Wg_endpoint = struct
 end
 
 module Wg_peer = struct
+  module AllowedIp = struct
+    (*     typedef struct wg_allowedip { *)
+    (* 	uint16_t family; *)
+    (* 	union { *)
+    (* 		struct in_addr ip4; *)
+    (* 		struct in6_addr ip6; *)
+    (* 	}; *)
+    (* 	uint8_t cidr; *)
+    (* 	struct wg_allowedip *next_allowedip; *)
+    (* } wg_allowedip; *)
+
+    type in_addr
+
+    let in_addr : in_addr structure typ = structure "in_addr"
+    let s_addr = field in_addr "s_addr" uint32_t
+    let () = seal in_addr
+
+    type in6_addr
+
+    let in6_addr : in6_addr structure typ = structure "in6_addr"
+    let s6_addr = field in6_addr "s6_addr" (array 16 uchar)
+    let () = seal in6_addr
+
+    type ip_union
+
+    let ip_union : ip_union union typ = union "ip_union"
+    let ip4 = field ip_union "ip4" in_addr
+    let ip6 = field ip_union "ip6" in6_addr
+    let () = seal ip_union
+
+    type wg_allowedip
+
+    let wg_allowedip : wg_allowedip structure typ = structure "wg_allowedip"
+
+    (* Define the wg_allowedip struct *)
+    let family = field wg_allowedip "family" uint16_t
+    let ip = field wg_allowedip "ip" ip_union
+    let cidr = field wg_allowedip "cidr" uint8_t
+
+    let next_allowedip =
+      field wg_allowedip "next_allowedip" (ptr_opt wg_allowedip)
+
+    let () = seal wg_allowedip
+  end
+
   (* typedef struct wg_peer { *)
   (* 	enum wg_peer_flags flags; *)
   (* 	wg_key public_key; *)
   (* 	wg_key preshared_key; *)
   (* 	wg_endpoint endpoint; *)
-  (* 	struct timespec64 last_handshake_time;  <- TODO*)
-  (* 	uint64_t rx_bytes, tx_bytes;  <- TODO*)
-  (* 	uint16_t persistent_keepalive_interval;  <- TODO*)
-  (* 	struct wg_allowedip *first_allowedip, *last_allowedip;  <- TODO*)
-  (* 	struct wg_peer *next_peer;  <- TODO*)
+  (* 	struct timespec64 last_handshake_time; *)
+  (* 	uint64_t rx_bytes, tx_bytes; *)
+  (* 	uint16_t persistent_keepalive_interval; *)
+  (* 	struct wg_allowedip *first_allowedip, *last_allowedip; *)
+  (* 	struct wg_peer *next_peer; *)
   (* } wg_peer; *)
   type wg_peer
 
   let wg_peer : wg_peer structure typ = structure "wg_peer"
-  let flags = field wg_peer "flags" uint32_t
-  let public_key = field wg_peer "public_key" wg_key
-  let preshared_key = field wg_peer "preshared_key" wg_key
+  let flags = field wg_peer "flags" uint16_t
+  let public_key = Array.init 32 (fun _ -> field wg_peer "public_key" uchar)
+
+  let preshared_key =
+    Array.init 32 (fun _ -> field wg_peer "preshared_key" uchar)
+
   let endpoint = field wg_peer "endpoint" Wg_endpoint.wg_endpoint
+
+  let last_handshake_time =
+    field wg_peer "last_handshake_time" TimeSpec64.timespec64
+
+  let rx_bytes = field wg_peer "rx_bytes" uint64_t
+  let tx_bytes = field wg_peer "tx_bytes" uint64_t
+
+  let persistent_keepalive_interval =
+    field wg_peer "persistent_keepalive_interval" uint16_t
+
+  let first_allowedip =
+    field wg_peer "first_allowedip" (ptr AllowedIp.wg_allowedip)
+
+  let last_allowedip =
+    field wg_peer "last_allowedip" (ptr AllowedIp.wg_allowedip)
+
+  let next_peer = field wg_peer "next_peer" (ptr wg_peer)
   let () = seal wg_peer
 
   (* enum wg_peer_flags { *)
