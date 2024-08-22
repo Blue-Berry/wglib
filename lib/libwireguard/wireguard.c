@@ -1764,3 +1764,50 @@ void wg_generate_preshared_key(wg_key preshared_key)
 	}
 	close(fd);
 }
+
+
+ wg_device *wg_device_new(void){
+     wg_device *new_device = calloc(1, sizeof(wg_device));
+        new_device->flags = 10;
+        new_device->listen_port = 1;
+        new_device->fwmark = 1;
+        new_device->first_peer = NULL;
+        new_device->last_peer = NULL;
+        new_device->ifindex = 2;
+        new_device->name[0] = '0';
+        new_device->name[1] = '1';
+        new_device->name[2] = '2';
+        new_device->name[3] = '3';
+        new_device->name[4] = '4';
+        new_device->name[5] = '\0';
+
+
+     return new_device;
+ }
+
+
+void wg_device_set_name(wg_device *device, const char *name){
+    strncpy(device->name, name, sizeof(device->name) - 1);
+    device->name[sizeof(device->name) - 1] = '\0';
+}
+void wg_device_set_flags(wg_device *device, enum wg_device_flags flags){
+    device->flags = flags;
+}
+void wg_device_set_public_key(wg_device *device, const wg_key public_key){
+    memcpy(device->public_key, public_key, sizeof(device->public_key));
+
+}
+void wg_device_set_private_key(wg_device *device, const wg_key private_key){
+    memcpy(device->private_key, private_key, sizeof(device->private_key));
+}
+void wg_device_set_listen_port(wg_device *device, uint16_t listen_port){
+    device->listen_port = listen_port;
+
+}
+void wg_device_set_first_peer(wg_device *device, wg_peer *peer){
+    device->first_peer = peer;
+
+}
+void wg_device_set_last_peer(wg_device *device, wg_peer *peer){
+    device->last_peer = peer;
+}

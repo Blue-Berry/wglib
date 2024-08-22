@@ -102,4 +102,6 @@ void wg_generate_public_key(wg_key public_key, const wg_key private_key);
 void wg_generate_private_key(wg_key private_key);
 void wg_generate_preshared_key(wg_key preshared_key);
 
+wg_device *wg_device_new(void);
+
 #endif

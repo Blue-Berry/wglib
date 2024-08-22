@@ -77,9 +77,27 @@ module Wg_device = struct
   type wg_device
 
   let wg_device : wg_device structure typ = structure "wg_device"
-  let name = field wg_device "name" string
+
+  (* let name = field wg_device "name" char *)
+  (* let name1 = field wg_device "name" char *)
+  (* let name2 = field wg_device "name" char *)
+  (* let name3 = field wg_device "name" char *)
+  (* let name4 = field wg_device "name" char *)
+  (* let name5 = field wg_device "name" char *)
+  (* let name6 = field wg_device "name" char *)
+  (* let name7 = field wg_device "name" char *)
+  (* let name8 = field wg_device "name" char *)
+  (* let name9 = field wg_device "name" char *)
+  (* let name10 = field wg_device "name" char *)
+  (* let name11 = field wg_device "name" char *)
+  (* let name12 = field wg_device "name" char *)
+  (* let name13 = field wg_device "name" char *)
+  (* let name14 = field wg_device "name" char *)
+  (* let name15 = field wg_device "name" char *)
+  (* let name16 = field wg_device "name" char *)
+  let name = Array.init 16 (fun _ -> field wg_device "name" char)
   let ifindex = field wg_device "ifindex" uint32_t
-  let wg_device_flags = field wg_device "flags" int64_t
+  let flags = field wg_device "flags" uint16_t
   let public_key = field wg_device "public_key" wg_key
   let private_key = field wg_device "private_key" wg_key
   let fwmark = field wg_device "fwmark" uint32_t
@@ -138,3 +156,31 @@ let wg_generate_preshared_key =
 let wg_key_to_base64 =
   foreign "wg_key_to_base64"
     (ptr Ctypes.char @-> Ctypes.const wg_key @-> returning void)
+
+let wg_device_new = foreign "wg_device_new" (void @-> returning (ptr wg_device))
+
+(* void wg_device_set_name(wg_device *device, const char *name); *)
+let wg_device_set_name =
+  foreign "wg_device_set_name" (ptr wg_device @-> string @-> returning void)
+
+(* void wg_device_set_flags(wg_device *device, enum wg_device_flags flags); *)
+let wg_device_set_flags =
+  foreign "wg_device_set_flags" (ptr wg_device @-> int64_t @-> returning void)
+
+(* void wg_device_set_public_key(wg_device *device, const wg_key public_key); *)
+let wg_device_set_public_key =
+  foreign "wg_device_set_public_key"
+    (ptr wg_device @-> Ctypes_static.const wg_key @-> returning void)
+
+(* void wg_device_set_private_key(wg_device *device, const wg_key private_key); *)
+let wg_device_set_private_key =
+  foreign "wg_device_set_private_key"
+    (ptr wg_device @-> Ctypes_static.const wg_key @-> returning void)
+
+(* void wg_device_set_listen_port(wg_device *device, uint16_t listen_port); *)
+let wg_device_set_listen_port =
+  foreign "wg_device_set_listen_port"
+    (ptr wg_device @-> uint16_t @-> returning void)
+
+(* void wg_device_set_first_peer(wg_device *device, wg_peer *peer); *)
+(* void wg_device_set_last_peer(wg_device *device, wg_peer *peer); *)

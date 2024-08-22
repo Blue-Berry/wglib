@@ -100,4 +100,15 @@ void wg_generate_public_key(wg_key public_key, const wg_key private_key);
 void wg_generate_private_key(wg_key private_key);
 void wg_generate_preshared_key(wg_key preshared_key);
 
+
+wg_device *wg_device_new(void);
+void wg_device_set_name(wg_device *device, const char *name);
+void wg_device_set_flags(wg_device *device, enum wg_device_flags flags);
+void wg_device_set_public_key(wg_device *device, const wg_key public_key);
+void wg_device_set_private_key(wg_device *device, const wg_key private_key);
+void wg_device_set_listen_port(wg_device *device, uint16_t listen_port);
+void wg_device_set_first_peer(wg_device *device, wg_peer *peer);
+void wg_device_set_last_peer(wg_device *device, wg_peer *peer);
+
+
 #endif
