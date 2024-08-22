@@ -31,7 +31,14 @@ module Key = struct
       ~length:(Ctypes.CArray.length base64)
 end
 
+module Peer = struct
+  type t
+  (* TODO: Implement *)
+end
+
 module Device = struct
+  open Ctypes
+
   (* typedef struct wg_device { *)
   (* 	char name[IFNAMSIZ]; *)
   (* 	uint32_t ifindex; *)
@@ -42,5 +49,35 @@ module Device = struct
   (* 	uint16_t listen_port; *)
   (* 	struct wg_peer *first_peer, *last_peer; *)
   (* } wg_device; *)
-  type t = { name : string; ifindex : int }
+  type t = {
+    name : string;
+    ifindex : int;
+    public_key : Key.t Option.t;
+    private_key : Key.t Option.t;
+    fwmark : int Option.t;
+    listen_port : int Option.t;
+    peer : Peer.t List.t;
+  }
+
+  let to_wg_device device =
+    let cdevice = make Wg_device.wg_device in
+    let name_arr = Base.String.to_array device.name in
+    let () =
+      Base.Array.for_alli
+        ~f:(fun i c ->
+          Ctypes.setf cdevice (Array.get Wglib.Wireguard.Wg_device.name i) c
+          |> ignore;
+          true)
+        name_arr
+      |> ignore
+    in
+
+    cdevice
+
+  (* Array.iteri *)
+  (*       (fun i c -> *)
+  (*         Ctypes.setf device (Array.get Wglib.Wireguard.Wg_device.name i) c) *)
+  (*       name *)
+
+  (* Wireguard.Wg_device.Wg_device_flags.wgdevice_replace_peers <- Used to replace peers instead of adding them *)
 end

@@ -37,6 +37,7 @@
             pname = name;
             src = ./.;
             buildInputs = with pkgs.ocamlPackages; [
+                base
                 ctypes
                 ctypes-foreign
                 pkgs.libffi

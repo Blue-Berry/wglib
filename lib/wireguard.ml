@@ -170,13 +170,12 @@ module Wg_device = struct
   let last_peer = field wg_device "last_peer" (ptr Wg_peer.wg_peer)
   let () = seal wg_device
 
-  (* enum wg_device_flags { *)
-  (* 	WGDEVICE_REPLACE_PEERS = 1U << 0, *)
-  (* 	WGDEVICE_HAS_PRIVATE_KEY = 1U << 1, *)
-  (* 	WGDEVICE_HAS_PUBLIC_KEY = 1U << 2, *)
-  (* 	WGDEVICE_HAS_LISTEN_PORT = 1U << 3, *)
-  (* 	WGDEVICE_HAS_FWMARK = 1U << 4 *)
-  (* }; *)
+  (** enum wg_device_flags {
+     WGDEVICE_REPLACE_PEERS = 1U << 0,
+     WGDEVICE_HAS_PRIVATE_KEY = 1U << 1,
+     WGDEVICE_HAS_PUBLIC_KEY = 1U << 2,
+     WGDEVICE_HAS_LISTEN_PORT = 1U << 3,
+     WGDEVICE_HAS_FWMARK = 1U << 4} **)
   module Wg_device_flags = struct
     let wgdevice_replace_peers = 1 lsl 0
     let wgdevice_has_private_key = 1 lsl 1
