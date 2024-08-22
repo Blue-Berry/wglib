@@ -106,7 +106,7 @@ module Device = struct
             CArray.iteri
               (fun i c ->
                 Ctypes.setf cdevice
-                  (Array.get Wglib.Wireguard.Wg_device.public_key i)
+                  (Array.get Wireguard.Wg_device.public_key i)
                   c)
               key
           in
@@ -121,7 +121,7 @@ module Device = struct
             CArray.iteri
               (fun i c ->
                 Ctypes.setf cdevice
-                  (Array.get Wglib.Wireguard.Wg_device.private_key i)
+                  (Array.get Wireguard.Wg_device.private_key i)
                   c)
               key
           in
