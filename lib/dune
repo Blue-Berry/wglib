@@ -1,14 +1,19 @@
 (library
  (name wglib)
  (libraries ctypes ctypes-foreign )
- ; (foreign_stubs
- ;  (language c)
- ;  (names wireguard))
   (extra_objects wireguard)
+  (foreign_archives wireguard)
  )
 
+
 (rule
- (targets wireguard.o)
- (deps wireguard.c)
+ (deps (source_tree libwireguard))
+ (targets libwireguard.a dllwireguard.so wireguard.o)
  (action
-  (run ocamlopt %{deps})))
+ (no-infer
+  (progn
+   (chdir libwireguard (run make))
+   (copy libwireguard/wireguard.o wireguard.o)
+   (copy libwireguard/wireguard.a libwireguard.a)
+   (copy libwireguard/wireguard.so dllwireguard.so)
+   ))))
