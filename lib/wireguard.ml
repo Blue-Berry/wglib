@@ -144,29 +144,3 @@ let wg_key_to_base64 =
     (ptr Ctypes.char @-> Ctypes.const wg_key @-> returning void)
 
 let wg_device_new = foreign "wg_device_new" (void @-> returning (ptr wg_device))
-
-(* void wg_device_set_name(wg_device *device, const char *name); *)
-let wg_device_set_name =
-  foreign "wg_device_set_name" (ptr wg_device @-> string @-> returning void)
-
-(* void wg_device_set_flags(wg_device *device, enum wg_device_flags flags); *)
-let wg_device_set_flags =
-  foreign "wg_device_set_flags" (ptr wg_device @-> int64_t @-> returning void)
-
-(* void wg_device_set_public_key(wg_device *device, const wg_key public_key); *)
-let wg_device_set_public_key =
-  foreign "wg_device_set_public_key"
-    (ptr wg_device @-> Ctypes_static.const wg_key @-> returning void)
-
-(* void wg_device_set_private_key(wg_device *device, const wg_key private_key); *)
-let wg_device_set_private_key =
-  foreign "wg_device_set_private_key"
-    (ptr wg_device @-> Ctypes_static.const wg_key @-> returning void)
-
-(* void wg_device_set_listen_port(wg_device *device, uint16_t listen_port); *)
-let wg_device_set_listen_port =
-  foreign "wg_device_set_listen_port"
-    (ptr wg_device @-> uint16_t @-> returning void)
-
-(* void wg_device_set_first_peer(wg_device *device, wg_peer *peer); *)
-(* void wg_device_set_last_peer(wg_device *device, wg_peer *peer); *)

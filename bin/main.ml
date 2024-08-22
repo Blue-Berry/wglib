@@ -1,10 +1,26 @@
-let device = Wglib.Wireguard.wg_device_new ()
-let () = Wglib.Wireguard.wg_device_set_name device "wgtest0"
+open Ctypes
+open Wglib.Wireguard
+
+let device = make Wg_device.wg_device
 
 let () =
-  Wglib.Wireguard.wg_device_set_listen_port device (Unsigned.UInt16.of_int 1234)
-
-let device = device |> Ctypes.( !@ )
+  let () =
+    let name = "wgtest0" |> String.to_seq |> Array.of_seq in
+    Array.iteri
+      (fun i c ->
+        Ctypes.setf device (Array.get Wglib.Wireguard.Wg_device.name i) c)
+      name
+  in
+  let () = setf device Wg_device.flags (Unsigned.UInt16.of_int 10) in
+  let () = setf device Wg_device.listen_port (Unsigned.UInt16.of_int 1234) in
+  let private_key = Wglib.Wgapi.Key.generate_private_key () in
+  let () =
+    CArray.iteri
+      (fun i c ->
+        Ctypes.setf device (Array.get Wglib.Wireguard.Wg_device.private_key i) c)
+      private_key
+  in
+  ()
 
 let () =
   print_endline
