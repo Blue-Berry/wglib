@@ -40,6 +40,7 @@
                 base
                 ctypes
                 ctypes-foreign
+                ipaddr
                 pkgs.libffi
             ];
           };

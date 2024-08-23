@@ -38,29 +38,87 @@ module Key = struct
 end
 
 module Allowed_ip = struct
-  type t
+  type t = { family : int; ip : Ipaddr.t; cidr : int; next : t option }
+  (* TODO: Implement *)
 end
 
 module Peer = struct
   open Ctypes
 
+  (* WGPEER_REMOVE_ME = 1U << 0,
+     WGPEER_REPLACE_ALLOWEDIPS = 1U << 1,
+     WGPEER_HAS_PUBLIC_KEY = 1U << 2,
+     WGPEER_HAS_PRESHARED_KEY = 1U << 3,
+     WGPEER_HAS_PERSISTENT_KEEPALIVE_INTERVAL = 1U << 4 *)
   type t = {
-    flags : int;
-    public_key : Key.t;
-    preshared_key : Key.t;
-    endpoint : Unix.sockaddr;
+    public_key : Key.t Option.t;
+    preshared_key : Key.t Option.t;
+    endpoint : Unix.sockaddr Option.t;
     last_handshake_time : Float.t;
     rx_bytes : int;
     tx_bytes : int;
-    persistent_keepalive_interval : int;
+    persistent_keepalive_interval : int Option.t;
     allowed_ip : Allowed_ip.t list;
-    next_peer : t option;
   }
 
   (* Note: does this need to be a pointer? *)
   type s = Wg_peer.wg_peer structure
   type p = s ptr
-  (* TODO: Implement *)
+
+  let to_wg_peer peer =
+    let flags = ref Wg_peer.Wg_peer_flags.wgpeer_replace_allowedips in
+    let cpeer = make Wg_peer.wg_peer in
+    (* Set public key *)
+    let () =
+      match peer.public_key with
+      | None -> ()
+      | Some key ->
+          let () =
+            CArray.iteri
+              (fun i c ->
+                Ctypes.setf cpeer (Array.get Wireguard.Wg_peer.public_key i) c)
+              key
+          in
+          flags := !flags lor Wg_peer.Wg_peer_flags.wgpeer_has_public_key
+    in
+    (* Set preshared key *)
+    let () =
+      match peer.preshared_key with
+      | None -> ()
+      | Some key ->
+          let () =
+            CArray.iteri
+              (fun i c ->
+                Ctypes.setf cpeer
+                  (Array.get Wireguard.Wg_peer.preshared_key i)
+                  c)
+              key
+          in
+          flags := !flags lor Wg_peer.Wg_peer_flags.wgpeer_has_preshared_key
+    in
+    (* Set persistent_keepalive_interval *)
+    let () =
+      match peer.persistent_keepalive_interval with
+      | None -> ()
+      | Some interval ->
+          let () =
+            setf cpeer Wg_peer.persistent_keepalive_interval
+              (Unsigned.UInt16.of_int interval)
+          in
+          flags :=
+            !flags
+            lor Wg_peer.Wg_peer_flags.wgpeer_has_persistent_keepalive_interval
+    in
+
+    (* Set allowed ips *)
+    let () = failwith "Not implemented" in
+
+    (* Set flags *)
+    let () = failwith "Not implemented" in
+
+    (* Set endpoint *)
+    let () = failwith "Not implemented" in
+    cpeer
 
   let list_from_start_stop (start : p) (stop : p) =
     let rec loop acc current =
@@ -70,6 +128,13 @@ module Peer = struct
         loop (current :: acc) next
     in
     loop [] start
+
+  (* TODO:
+        - Need to be able to allocate a new peer in memory
+        - Need to construct a list
+        - Remove a peer
+        - Set allowed Ips
+        - add allowed ips *)
 end
 
 module Device = struct
@@ -171,7 +236,7 @@ module Device = struct
 
     cdevice
 
-  let from_wg_device cdevice =
+  let of_wg_device cdevice =
     let device =
       {
         name = "";
@@ -249,4 +314,11 @@ module Device = struct
   (* Note: when sending peers they need to be stored in stable memory (bigarray, CArray, malloc, Ctypes.allocate) I assume Ctypes.make *)
 
   (* Wireguard.Wg_device.Wg_device_flags.wgdevice_replace_peers <- Used to replace peers instead of adding them *)
+  let add_peers _device _peers = failwith "Not implemented"
+  let set_peers _device _peers = failwith "Not implemented"
+
+  let set_device cdevice =
+    let res = wg_set_device (addr cdevice) in
+    (* TODO: create error type with all possible errors *)
+    match res with 0 -> Ok () | _ -> Error (`Msg "Failed to set device")
 end

@@ -1,6 +1,6 @@
 (library
  (name wglib)
- (libraries ctypes ctypes-foreign base )
+ (libraries ctypes ctypes-foreign base ipaddr )
   (extra_objects wireguard)
   (foreign_archives wireguard)
  )
