@@ -224,9 +224,9 @@ module Device = struct
     match start_peer with
     | start_peer when Ctypes.is_null start_peer -> device
     | start_peer when start_peer == stop_peer ->
-        { device with peer = [ !@start_peer ] }
+        { device with peer = [ start_peer ] }
     | _ ->
-        let peers = Peer.list_from_start_stop !@start_peer !@stop_peer in
+        let peers = Peer.list_from_start_stop start_peer stop_peer in
         { device with peer = peers }
 
   (* Note: when sending peers they need to be stored in stable memory (bigarray, CArray, malloc, Ctypes.allocate) *)
