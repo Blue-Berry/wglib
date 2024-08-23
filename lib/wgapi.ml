@@ -38,8 +38,36 @@ module Key = struct
 end
 
 module Allowed_ip = struct
-  type t = { family : int; ip : Ipaddr.t; cidr : int; next : t option }
+  open Ctypes
+
+  type t = { family : int; ip : Ipaddr.t; cidr : int }
   (* TODO: Implement *)
+
+  let to_wg_allowed_ip allowed_ip next =
+    let callowed_ip = make Wg_peer.AllowedIp.wg_allowedip in
+    setf callowed_ip Wg_peer.AllowedIp.family
+      (Unsigned.UInt16.of_int allowed_ip.family);
+    setf callowed_ip Wg_peer.AllowedIp.cidr
+      (Unsigned.UInt8.of_int allowed_ip.cidr);
+    let () =
+      match next with
+      | None -> ()
+      | Some next -> setf callowed_ip Wg_peer.AllowedIp.next_allowedip next
+    in
+    let () =
+      match allowed_ip.ip with
+      | Ipaddr.V4 ip ->
+          let addr = make Wg_peer.AllowedIp.in_addr in
+          setf addr Wg_peer.AllowedIp.s_addr
+            (Unsigned.UInt32.of_int32 @@ Ipaddr.V4.to_int32 ip);
+          let ip = make Wg_peer.AllowedIp.ip_union in
+          setf ip Wg_peer.AllowedIp.ip4 addr;
+          setf callowed_ip Wg_peer.AllowedIp.ip ip
+      | Ipaddr.V6 _ip -> ()
+    in
+
+    let () = failwith "Allowed IP not implemented" in
+    callowed_ip
 end
 
 module Peer = struct
