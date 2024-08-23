@@ -37,15 +37,32 @@ module Key = struct
       ~length:(Ctypes.CArray.length base64)
 end
 
+module Allowed_ip = struct
+  type t
+end
+
 module Peer = struct
   open Ctypes
 
+  type t = {
+    flags : int;
+    public_key : Key.t;
+    preshared_key : Key.t;
+    endpoint : Unix.sockaddr;
+    last_handshake_time : Float.t;
+    rx_bytes : int;
+    tx_bytes : int;
+    persistent_keepalive_interval : int;
+    allowed_ip : Allowed_ip.t list;
+    next_peer : t option;
+  }
+
   (* Note: does this need to be a pointer? *)
   type s = Wg_peer.wg_peer structure
-  type t = s ptr
+  type p = s ptr
   (* TODO: Implement *)
 
-  let list_from_start_stop (start : t) (stop : t) =
+  let list_from_start_stop (start : p) (stop : p) =
     let rec loop acc current =
       if current == stop then acc
       else
@@ -75,7 +92,7 @@ module Device = struct
     private_key : Key.t Option.t;
     fwmark : int Option.t;
     listen_port : int Option.t;
-    peer : Peer.t List.t;
+    peer : Peer.p List.t;
   }
 
   let to_wg_device device =
@@ -229,7 +246,7 @@ module Device = struct
         let peers = Peer.list_from_start_stop start_peer stop_peer in
         { device with peer = peers }
 
-  (* Note: when sending peers they need to be stored in stable memory (bigarray, CArray, malloc, Ctypes.allocate) *)
+  (* Note: when sending peers they need to be stored in stable memory (bigarray, CArray, malloc, Ctypes.allocate) I assume Ctypes.make *)
 
   (* Wireguard.Wg_device.Wg_device_flags.wgdevice_replace_peers <- Used to replace peers instead of adding them *)
 end
