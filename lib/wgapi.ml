@@ -41,19 +41,16 @@ module Allowed_ip = struct
   open Ctypes
 
   type t = { family : int; ip : Ipaddr.t; cidr : int }
-  (* TODO: Implement *)
 
-  let to_wg_allowed_ip allowed_ip next =
+  (* TODO: figure out what to do with next_allowedip *)
+  let to_wg_allowed_ip allowed_ip =
     let callowed_ip = make Wg_peer.AllowedIp.wg_allowedip in
     setf callowed_ip Wg_peer.AllowedIp.family
       (Unsigned.UInt16.of_int allowed_ip.family);
     setf callowed_ip Wg_peer.AllowedIp.cidr
       (Unsigned.UInt8.of_int allowed_ip.cidr);
-    let () =
-      match next with
-      | None -> ()
-      | Some next -> setf callowed_ip Wg_peer.AllowedIp.next_allowedip next
-    in
+
+    (* Set the ip of the allowed ip c struct *)
     let () =
       match allowed_ip.ip with
       | Ipaddr.V4 ip ->
@@ -63,11 +60,39 @@ module Allowed_ip = struct
           let ip = make Wg_peer.AllowedIp.ip_union in
           setf ip Wg_peer.AllowedIp.ip4 addr;
           setf callowed_ip Wg_peer.AllowedIp.ip ip
-      | Ipaddr.V6 _ip -> ()
+      | Ipaddr.V6 ip ->
+          let addr = make Wg_peer.AllowedIp.in6_addr in
+          let ip_buf = Buffer.create 16 in
+          Ipaddr.V6.to_buffer ip_buf ip;
+          Array.iteri
+            (fun i c ->
+              setf addr c
+                (Buffer.nth ip_buf i |> Base.Char.to_int
+               |> Unsigned.UChar.of_int))
+            Wg_peer.AllowedIp.s6_addr;
+          let ip = make Wg_peer.AllowedIp.ip_union in
+          setf ip Wg_peer.AllowedIp.ip6 addr;
+          setf callowed_ip Wg_peer.AllowedIp.ip ip
     in
-
-    let () = failwith "Allowed IP not implemented" in
     callowed_ip
+
+  let set_next_allowedip allowed_ip next =
+    setf allowed_ip Wg_peer.AllowedIp.next_allowedip next
+
+  (** [allowed_ips_of_list] [allowed_ip] takes a list ip allowed ips zips them together into a linked list and returns the first an last pointer *)
+  let allowed_ips_of_list (allowed_ips : t list) =
+    let allowed_ips = List.map to_wg_allowed_ip allowed_ips in
+    let rec loop acc = function
+      | [] -> ()
+      | [ x ] -> set_next_allowedip x None
+      | x :: y :: xs ->
+          set_next_allowedip x (Some (addr y));
+          loop (x :: acc) (y :: xs)
+    in
+    loop [] allowed_ips;
+    let first = List.hd allowed_ips |> addr in
+    let last = Base.List.last_exn allowed_ips |> addr in
+    (first, last)
 end
 
 module Peer = struct
@@ -185,7 +210,7 @@ module Device = struct
     private_key : Key.t Option.t;
     fwmark : int Option.t;
     listen_port : int Option.t;
-    peer : Peer.p List.t;
+    peer : Peer.p List.t; (* TODO: set peer to use type peer.t *)
   }
 
   let to_wg_device device =
@@ -349,4 +374,9 @@ module Device = struct
     let res = wg_set_device (addr cdevice) in
     (* TODO: create error type with all possible errors *)
     match res with 0 -> Ok () | _ -> Error (`Msg "Failed to set device")
+
+  let configure_peer _peer = failwith "Not implemented"
+  let remove_peer _peer = failwith "Not implemented"
+  let configure_peers _peers = failwith "Not implemented"
+  let remove_peers _pers = failwith "Not impolemented"
 end

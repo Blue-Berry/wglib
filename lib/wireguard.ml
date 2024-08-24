@@ -57,7 +57,8 @@ module Wg_peer = struct
     let in6_addr : in6_addr structure typ = structure "in6_addr"
     (* TODO: fix this and set it to arrrawy of fields *)
 
-    let s6_addr = field in6_addr "s6_addr" (array 16 uchar)
+    (* let s6_addr = field in6_addr "s6_addr" (array 16 uchar) *)
+    let s6_addr = Array.init 16 (fun _ -> field in6_addr "s6_addr" uchar)
     let () = seal in6_addr
 
     type ip_union
