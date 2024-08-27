@@ -119,7 +119,7 @@ let () =
   let allowed_ip : Wglib.Wgapi.Allowed_ip.t =
     let ip =
       Wglib.Wgapi.Allowed_ip.Ip.V4
-        (Wglib.Wgapi.Allowed_ip.Ip.V4.of_string_exn "1.2.3.4")
+        (Wglib.Wgapi.Allowed_ip.Ip.V4.of_string_exn "0.0.0.1")
     in
     let cidr : Unsigned.UInt8.t = Unsigned.UInt8.of_int 32 in
     { ip; cidr }
@@ -136,7 +136,13 @@ let () =
         Wglib.Wgapi.Key.(generate_private_key () |> generate_public_key)
       ()
   in
-  let peers = [ peer1; peer2 ] in
+  let peer3 =
+    Wglib.Wgapi.Peer.create
+      ~public_key:
+        Wglib.Wgapi.Key.(generate_private_key () |> generate_public_key)
+      ()
+  in
+  let peers = [ peer1; peer2; peer3 ] in
   let device =
     Wglib.Wgapi.Device.create ~name:"wgtest1" ~listen_port:1234
       ~private_key:(Wglib.Wgapi.Key.generate_private_key ())

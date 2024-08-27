@@ -66,9 +66,6 @@ module Allowed_ip = struct
     let () =
       match allowed_ip.ip with
       | Ip.V4 ip ->
-          print_endline
-            (Ip.V4.to_octets ip |> Base.String.to_list_rev
-           |> Base.String.of_list |> Ip.V4.of_octets_exn |> Ip.V4.to_string);
           let addr = make Wg_peer.AllowedIp.in_addr in
           (* Reverse the octets of the ip *)
           (* TODO: figure out which way to flip oc tects is faster *)
