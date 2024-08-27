@@ -1,5 +1,8 @@
 open Wireguard
 
+let af_inet = 2
+let af_inet6 = 10
+
 module Key = struct
   open Ctypes
 
@@ -41,15 +44,15 @@ module Allowed_ip = struct
   open Ctypes
   module Ip = Ipaddr
 
-  type t = { family : int; ip : Ip.t; cidr : int }
+  type t = { ip : Ip.t; cidr : Unsigned.UInt8.t }
 
-  (* TODO: figure out what to do with next_allowedip *)
   let to_wg_allowed_ip allowed_ip =
+    let family =
+      match allowed_ip.ip with Ip.V4 _ -> af_inet | Ip.V6 _ -> af_inet6
+    in
     let callowed_ip = make Wg_peer.AllowedIp.wg_allowedip in
-    setf callowed_ip Wg_peer.AllowedIp.family
-      (Unsigned.UInt16.of_int allowed_ip.family);
-    setf callowed_ip Wg_peer.AllowedIp.cidr
-      (Unsigned.UInt8.of_int allowed_ip.cidr);
+    setf callowed_ip Wg_peer.AllowedIp.family (Unsigned.UInt16.of_int family);
+    setf callowed_ip Wg_peer.AllowedIp.cidr allowed_ip.cidr;
 
     (* Set the ip of the allowed ip c struct *)
     let () =
@@ -112,7 +115,7 @@ module Peer = struct
     rx_bytes : int;
     tx_bytes : int;
     persistent_keepalive_interval : int Option.t;
-    allowed_ip : Allowed_ip.t list;
+    allowed_ips : Allowed_ip.t list;
   }
 
   (* Note: does this need to be a pointer? *)
@@ -165,10 +168,20 @@ module Peer = struct
     in
 
     (* Set allowed ips *)
-    let () = failwith "Not implemented" in
+    let () =
+      match List.is_empty peer.allowed_ips with
+      | true -> ()
+      | false ->
+          let first_allowedip, last_allowedip =
+            Allowed_ip.allowed_ips_of_list peer.allowed_ips
+          in
+          let () = setf cpeer Wg_peer.first_allowedip first_allowedip in
+          let () = setf cpeer Wg_peer.last_allowedip last_allowedip in
+          flags := !flags lor Wg_peer.Wg_peer_flags.wgpeer_replace_allowedips
+    in
 
     (* Set flags *)
-    let () = failwith "Not implemented" in
+    setf cpeer Wg_peer.flags (Unsigned.UInt16.of_int !flags);
 
     (* Set endpoint *)
     let () = failwith "Not implemented" in
