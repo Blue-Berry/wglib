@@ -119,7 +119,7 @@ let () =
   let allowed_ip : Wglib.Wgapi.Allowed_ip.t =
     let ip =
       Wglib.Wgapi.Allowed_ip.Ip.V4
-        (Wglib.Wgapi.Allowed_ip.Ip.V4.of_string_exn "10.10.10.10")
+        (Wglib.Wgapi.Allowed_ip.Ip.V4.of_string_exn "1.2.3.4")
     in
     let cidr : Unsigned.UInt8.t = Unsigned.UInt8.of_int 32 in
     { ip; cidr }

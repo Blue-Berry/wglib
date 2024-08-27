@@ -66,9 +66,26 @@ module Allowed_ip = struct
     let () =
       match allowed_ip.ip with
       | Ip.V4 ip ->
+          print_endline
+            (Ip.V4.to_octets ip |> Base.String.to_list_rev
+           |> Base.String.of_list |> Ip.V4.of_octets_exn |> Ip.V4.to_string);
           let addr = make Wg_peer.AllowedIp.in_addr in
-          setf addr Wg_peer.AllowedIp.s_addr
-            (Unsigned.UInt32.of_int32 @@ Ip.V4.to_int32 ip);
+          (* Reverse the octets of the ip *)
+          (* TODO: figure out which way to flip oc tects is faster *)
+          let ip_octets = Ip.V4.to_octets ip |> Base.String.to_array in
+          let ip_uint32 =
+            Base.Array.fold_right ~init:Unsigned.UInt32.zero
+              ~f:(fun c (acc : Unsigned.UInt32.t) ->
+                Unsigned.UInt32.logor
+                  (Unsigned.UInt32.shift_left acc 8)
+                  (Unsigned.UInt32.of_int (Base.Char.to_int c)))
+              ip_octets
+          in
+          (* let ip_uint32 = *)
+          (*   Ip.V4.to_octets ip |> Base.String.to_list_rev |> Base.String.of_list *)
+          (* |> Ip.V4.of_octets_exn *)
+          (* in *)
+          setf addr Wg_peer.AllowedIp.s_addr ip_uint32;
           let ip = make Wg_peer.AllowedIp.ip_union in
           setf ip Wg_peer.AllowedIp.ip4 addr;
           setf callowed_ip Wg_peer.AllowedIp.ip ip
@@ -322,7 +339,7 @@ module Peer = struct
 
   let set_next_peer (peer : s) next = setf peer Wg_peer.next_peer next
 
-  let s_of_list (peers : t list) =
+  let s_list_of_list (peers : t list) =
     let cpeers = List.map to_wg_peer peers in
     let rec loop = function
       | [] -> ()
@@ -336,7 +353,7 @@ module Peer = struct
 
   let first_last_of_list (peers : t list) =
     assert (List.is_empty peers |> not);
-    let cpeers = s_of_list peers in
+    let cpeers = s_list_of_list peers in
     let first = Base.List.hd_exn cpeers |> addr in
     let last = Base.List.last_exn cpeers |> addr in
     (first, last)
