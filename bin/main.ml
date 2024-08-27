@@ -1,6 +1,7 @@
 open Ctypes
 open Wglib.Wireguard
 
+(* -------------------------- CTypes way -------------------------- *)
 let new_peer = make Wg_peer.wg_peer
 let () = setf new_peer Wg_peer.flags (Unsigned.UInt16.of_int 6)
 
@@ -34,8 +35,8 @@ let () =
         Ctypes.setf device (Array.get Wglib.Wireguard.Wg_device.private_key i) c)
       private_key
   in
-  let () = setf device Wg_device.first_peer (Ctypes.addr new_peer) in
-  let () = setf device Wg_device.last_peer (Ctypes.addr new_peer) in
+  let () = setf device Wg_device.first_peer (Some (Ctypes.addr new_peer)) in
+  let () = setf device Wg_device.last_peer (Some (Ctypes.addr new_peer)) in
   ()
 
 let () =
@@ -88,3 +89,30 @@ let err = Wglib.Wireguard.wg_add_device name
 let () = Printf.printf "wg_add_device: %d\n" err
 let err = Wglib.Wireguard.wg_set_device (Ctypes.addr device)
 let () = Printf.printf "wg_set_device: %d\n" err
+
+(* -------------------------- WgApi way -------------------------- *)
+(*
+  steps for configureing wireguard device:
+    1. generate private key
+    2. generate public key
+    3. create new peer
+    4. set peer public key
+    5. set peer flags
+    6. create new device
+    7. set device name
+    8. set device flags
+    9. set device listen port
+    10. set device private key
+    11. set device first peer
+    12. set device last peer
+    13. add device
+    14. set device
+  *)
+
+(* let () = *)
+(*   let private_key = Wglib.Wgapi.Key.generate_private_key () in *)
+(*   let public_key = Wglib.Wgapi.Key.generate_public_key private_key in *)
+(*   let peer = Wglib.Wgapi.Peer.create ~public_key () in *)
+(*   let peers = [ peer ] in *)
+(*   let device = Wglib.Wgapi.Device.create ~name:"wgtest1" ~peers () in *)
+(*   () *)

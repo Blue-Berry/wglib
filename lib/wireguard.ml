@@ -115,12 +115,12 @@ module Wg_peer = struct
     field wg_peer "persistent_keepalive_interval" uint16_t
 
   let first_allowedip =
-    field wg_peer "first_allowedip" (ptr AllowedIp.wg_allowedip)
+    field wg_peer "first_allowedip" (ptr_opt AllowedIp.wg_allowedip)
 
   let last_allowedip =
-    field wg_peer "last_allowedip" (ptr AllowedIp.wg_allowedip)
+    field wg_peer "last_allowedip" (ptr_opt AllowedIp.wg_allowedip)
 
-  let next_peer = field wg_peer "next_peer" (ptr wg_peer)
+  let next_peer = field wg_peer "next_peer" (ptr_opt wg_peer)
   let () = seal wg_peer
 
   (* enum wg_peer_flags { *)
@@ -169,8 +169,8 @@ module Wg_device = struct
   let private_key = Array.init 32 (fun _ -> field wg_device "private_key" uchar)
   let fwmark = field wg_device "fwmark" uint32_t
   let listen_port = field wg_device "listen_port" uint16_t
-  let first_peer = field wg_device "first_peer" (ptr Wg_peer.wg_peer)
-  let last_peer = field wg_device "last_peer" (ptr Wg_peer.wg_peer)
+  let first_peer = field wg_device "first_peer" (ptr_opt Wg_peer.wg_peer)
+  let last_peer = field wg_device "last_peer" (ptr_opt Wg_peer.wg_peer)
   let () = seal wg_device
 
   (** enum wg_device_flags {
