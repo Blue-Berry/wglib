@@ -39,8 +39,9 @@ end
 
 module Allowed_ip = struct
   open Ctypes
+  module Ip = Ipaddr
 
-  type t = { family : int; ip : Ipaddr.t; cidr : int }
+  type t = { family : int; ip : Ip.t; cidr : int }
 
   (* TODO: figure out what to do with next_allowedip *)
   let to_wg_allowed_ip allowed_ip =
@@ -53,17 +54,17 @@ module Allowed_ip = struct
     (* Set the ip of the allowed ip c struct *)
     let () =
       match allowed_ip.ip with
-      | Ipaddr.V4 ip ->
+      | Ip.V4 ip ->
           let addr = make Wg_peer.AllowedIp.in_addr in
           setf addr Wg_peer.AllowedIp.s_addr
-            (Unsigned.UInt32.of_int32 @@ Ipaddr.V4.to_int32 ip);
+            (Unsigned.UInt32.of_int32 @@ Ip.V4.to_int32 ip);
           let ip = make Wg_peer.AllowedIp.ip_union in
           setf ip Wg_peer.AllowedIp.ip4 addr;
           setf callowed_ip Wg_peer.AllowedIp.ip ip
-      | Ipaddr.V6 ip ->
+      | Ip.V6 ip ->
           let addr = make Wg_peer.AllowedIp.in6_addr in
           let ip_buf = Buffer.create 16 in
-          Ipaddr.V6.to_buffer ip_buf ip;
+          Ip.V6.to_buffer ip_buf ip;
           Array.iteri
             (fun i c ->
               setf addr c
@@ -367,6 +368,7 @@ module Device = struct
   (* Note: when sending peers they need to be stored in stable memory (bigarray, CArray, malloc, Ctypes.allocate) I assume Ctypes.make *)
 
   (* Wireguard.Wg_device.Wg_device_flags.wgdevice_replace_peers <- Used to replace peers instead of adding them *)
+  (* Set device without the public key flag *)
   let add_peers _device _peers = failwith "Not implemented"
   let set_peers _device _peers = failwith "Not implemented"
 
