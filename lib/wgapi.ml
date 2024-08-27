@@ -41,6 +41,7 @@ module Key = struct
 end
 
 module Allowed_ip = struct
+  (* TODO: creating v4 and v6 ip's need to be easier *)
   open Ctypes
   module Ip = Ipaddr
 
