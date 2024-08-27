@@ -360,10 +360,11 @@ module Device = struct
     private_key : Key.t Option.t;
     fwmark : int Option.t;
     listen_port : int Option.t;
-    peers : Peer.t List.t; (* TODO: set peer to use type peer.t *)
+    peers : Peer.t List.t;
   }
 
   let create ~name ?public_key ?private_key ?fwmark ?listen_port ?peers () =
+    let _ = Wireguard.wg_add_device name in
     {
       name;
       ifindex = -1;
@@ -440,7 +441,6 @@ module Device = struct
     let first_peer, last_peer = Peer.first_last_of_list device.peers in
     let () = setf cdevice Wg_device.first_peer (Some first_peer) in
     let () = setf cdevice Wg_device.last_peer (Some last_peer) in
-
     cdevice
 
   let of_wg_device cdevice =
@@ -516,14 +516,6 @@ module Device = struct
     | _, None -> device
     | None, _ -> device
 
-  (* match start_peer with *)
-  (* | start_peer when Ctypes.is_null start_peer -> device *)
-  (* | start_peer when start_peer == stop_peer -> *)
-  (*     { device with peers = [ start_peer ] } *)
-  (* | _ -> *)
-  (*     let peers = Peer.list_from_first_last start_peer stop_peer in *)
-  (*     { device with peers } device *)
-
   (* Note: when sending peers they need to be stored in stable memory (bigarray, CArray, malloc, Ctypes.allocate) I assume Ctypes.make *)
 
   (* Wireguard.Wg_device.Wg_device_flags.wgdevice_replace_peers <- Used to replace peers instead of adding them *)
@@ -531,7 +523,8 @@ module Device = struct
   let add_peers _device _peers = failwith "Not implemented"
   let set_peers _device _peers = failwith "Not implemented"
 
-  let set_device cdevice =
+  let set_device device =
+    let cdevice = to_wg_device device in
     let res = wg_set_device (addr cdevice) in
     (* TODO: create error type with all possible errors *)
     match res with 0 -> Ok () | _ -> Error (`Msg "Failed to set device")

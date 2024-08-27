@@ -109,10 +109,24 @@ let () = Printf.printf "wg_set_device: %d\n" err
     14. set device
   *)
 
-(* let () = *)
-(*   let private_key = Wglib.Wgapi.Key.generate_private_key () in *)
-(*   let public_key = Wglib.Wgapi.Key.generate_public_key private_key in *)
-(*   let peer = Wglib.Wgapi.Peer.create ~public_key () in *)
-(*   let peers = [ peer ] in *)
-(*   let device = Wglib.Wgapi.Device.create ~name:"wgtest1" ~peers () in *)
-(*   () *)
+let () =
+  Printf.printf "\n";
+  print_endline "WgApi way";
+  Printf.printf "\n"
+
+let () =
+  let private_key = Wglib.Wgapi.Key.generate_private_key () in
+  let public_key = Wglib.Wgapi.Key.generate_public_key private_key in
+  let peer = Wglib.Wgapi.Peer.create ~public_key () in
+  let peers = [ peer ] in
+  let device = Wglib.Wgapi.Device.create ~name:"wgtest1" ~peers () in
+  let err = Wglib.Wgapi.Device.set_device device in
+  let () =
+    match err with
+    | Ok () -> print_endline "Device set successfully"
+    | Error err -> (
+        match err with
+        | `Msg msg -> print_endline msg
+        | _ -> print_endline "Unknown error")
+  in
+  ()
