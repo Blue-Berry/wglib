@@ -125,7 +125,7 @@ let () =
     { ip; cidr }
   in
   let peer1 =
-    Wglib.Wgapi.Peer.create
+    Wglib.Wgapi.Peer.create ~persistent_keepalive_interval:10
       ~public_key:
         Wglib.Wgapi.Key.(generate_private_key () |> generate_public_key)
       ~allowed_ips:[ allowed_ip ] ()

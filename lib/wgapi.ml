@@ -38,6 +38,13 @@ module Key = struct
     Ctypes.string_from_ptr
       (Ctypes.CArray.start base64)
       ~length:(Ctypes.CArray.length base64)
+
+  let of_string (key_string : string) =
+    let base64 = CArray.of_string key_string in
+    assert (CArray.length base64 = 45);
+    let key = CArray.make Ctypes_static.uchar 32 in
+    let err = wg_key_from_base64 (CArray.start key) (CArray.start base64) in
+    match err with 0 -> Ok key | _ -> Error "Failed to convert string to key"
 end
 
 module Allowed_ip = struct

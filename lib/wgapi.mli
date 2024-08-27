@@ -2,12 +2,13 @@ val af_inet : int
 val af_inet6 : int
 
 module Key : sig
-  type t = Unsigned.uchar Ctypes_static.carray
+  type t
 
   val generate_private_key : unit -> t
-  val generate_public_key : Unsigned.uchar Ctypes_static.carray -> t
+  val generate_public_key : t -> t
   val generate_preshared_key : unit -> t
   val to_string : t -> string
+  val of_string : string -> (t, string) result
 end
 
 module Allowed_ip : sig

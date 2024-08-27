@@ -223,4 +223,8 @@ let wg_key_to_base64 =
   foreign "wg_key_to_base64"
     (ptr Ctypes.char @-> Ctypes.const wg_key @-> returning void)
 
+(* int wg_key_from_base64(wg_key key, const wg_key_b64_string base64); *)
+let wg_key_from_base64 =
+  foreign "wg_key_from_base64" (wg_key @-> ptr Ctypes.char @-> returning int)
+
 let wg_device_new = foreign "wg_device_new" (void @-> returning (ptr wg_device))
