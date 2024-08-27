@@ -118,6 +118,19 @@ module Peer = struct
     allowed_ips : Allowed_ip.t list;
   }
 
+  let create ?public_key ?preshared_key ?endpoint ?persistent_keepalive_interval
+      ?allowed_ips () =
+    {
+      public_key;
+      preshared_key;
+      endpoint;
+      last_handshake_time = 0.0;
+      rx_bytes = 0;
+      tx_bytes = 0;
+      persistent_keepalive_interval;
+      allowed_ips = Option.value ~default:[] allowed_ips;
+    }
+
   (* Note: does this need to be a pointer? *)
   type s = Wg_peer.wg_peer structure
   type p = s ptr
@@ -184,7 +197,7 @@ module Peer = struct
     setf cpeer Wg_peer.flags (Unsigned.UInt16.of_int !flags);
 
     (* Set endpoint *)
-    let () = failwith "Not implemented" in
+    (* let () = failwith "Not implemented" in *)
     cpeer
 
   let list_from_start_stop (start : p) (stop : p) =
