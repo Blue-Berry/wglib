@@ -32,7 +32,7 @@ module Key = struct
     let () = wg_generate_preshared_key (CArray.start key) in
     key
 
-  let to_base64 key =
+  let to_string (key : t) =
     let base64 = CArray.make Ctypes_static.char 44 in
     let () = wg_key_to_base64 (CArray.start base64) (CArray.start key) in
     Ctypes.string_from_ptr
@@ -41,7 +41,7 @@ module Key = struct
 end
 
 module Allowed_ip = struct
-  (* TODO: creating v4 and v6 ip's need to be easier *)
+  (* TODO: creating v4 and v6 ip's needs to be easier *)
   open Ctypes
   module Ip = Ipaddr
 
@@ -160,8 +160,9 @@ module Peer = struct
     allowed_ips : Allowed_ip.t list;
   }
 
-  let create ?public_key ?preshared_key ?endpoint ?persistent_keepalive_interval
-      ?allowed_ips () =
+  let create ?(public_key : Key.t option) ?(preshared_key : Key.t option)
+      ?(endpoint : Unix.sockaddr option)
+      ?(persistent_keepalive_interval : int option) ?allowed_ips () =
     {
       public_key;
       preshared_key;
@@ -364,7 +365,8 @@ module Device = struct
     peers : Peer.t List.t;
   }
 
-  let create ~name ?public_key ?private_key ?fwmark ?listen_port ?peers () =
+  let create ~name ?(public_key : Key.t option) ?(private_key : Key.t option)
+      ?(fwmark : int option) ?(listen_port : int option) ?peers () =
     let _ = Wireguard.wg_add_device name in
     {
       name;
