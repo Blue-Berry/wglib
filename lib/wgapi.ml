@@ -376,7 +376,7 @@ module Device = struct
     }
 
   let to_wg_device device =
-    let flags = ref 0 in
+    let flags = ref Wg_device.Wg_device_flags.wgdevice_replace_peers in
     let cdevice = make Wg_device.wg_device in
     let name_arr = Base.String.to_array device.name in
     (* Set name *)
