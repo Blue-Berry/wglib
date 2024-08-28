@@ -48,7 +48,6 @@ module Key = struct
 end
 
 module Allowed_ip = struct
-  (* TODO: creating v4 and v6 ip's needs to be easier *)
   open Ctypes
   module Ip = Ipaddr
 
@@ -363,7 +362,7 @@ module Peer = struct
         - add allowed ips *)
 end
 
-module Device = struct
+module Interface = struct
   open Ctypes
 
   (* typedef struct wg_device { *)
@@ -376,6 +375,7 @@ module Device = struct
   (* 	uint16_t listen_port; *)
   (* 	struct wg_peer *first_peer, *last_peer; *)
   (* } wg_device; *)
+
   type t = {
     name : string;
     ifindex : int;
@@ -540,6 +540,13 @@ module Device = struct
     | _, None -> device
     | None, _ -> device
 
+  let get_device name =
+    let cdevice = make Wg_device.wg_device in
+    let cdevice = allocate (ptr Wg_device.wg_device) (addr cdevice) in
+    let res = wg_get_device cdevice name in
+    match res with
+    | 0 -> Ok (of_wg_device !@(!@cdevice))
+    | _ -> Error "Failed to get device"
   (* Note: when sending peers they need to be stored in stable memory (bigarray, CArray, malloc, Ctypes.allocate) I assume Ctypes.make *)
 
   (* Wireguard.Wg_device.Wg_device_flags.wgdevice_replace_peers <- Used to replace peers instead of adding them *)

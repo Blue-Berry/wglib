@@ -37,6 +37,7 @@
             pname = name;
             src = ./.;
             buildInputs = with pkgs.ocamlPackages; [
+                ppx_jane
                 base
                 ctypes
                 ctypes-foreign

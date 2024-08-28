@@ -1,6 +1,7 @@
 (library
  (name wglib)
- (libraries ctypes ctypes-foreign base ipaddr )
+ (libraries ctypes ctypes-foreign base ipaddr ppx_jane)
+ (preprocess (pps ppx_jane))
   (extra_objects wireguard)
   (foreign_archives wireguard)
  )

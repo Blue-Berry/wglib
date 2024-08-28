@@ -55,9 +55,6 @@ module Wg_peer = struct
     type in6_addr
 
     let in6_addr : in6_addr structure typ = structure "in6_addr"
-    (* TODO: fix this and set it to arrrawy of fields *)
-
-    (* let s6_addr = field in6_addr "s6_addr" (array 16 uchar) *)
     let s6_addr = Array.init 16 (fun _ -> field in6_addr "s6_addr" uchar)
     let () = seal in6_addr
 
@@ -195,7 +192,7 @@ open Wg_device
 let wg_set_device = foreign "wg_set_device" (ptr wg_device @-> returning int)
 
 let wg_get_device =
-  foreign "wg_get_device" (ptr wg_device @-> string @-> returning int)
+  foreign "wg_get_device" (ptr (ptr wg_device) @-> string @-> returning int)
 
 let wg_add_device = foreign "wg_add_device" (string @-> returning int)
 let wg_del_device = foreign "wg_del_device" (string @-> returning int)

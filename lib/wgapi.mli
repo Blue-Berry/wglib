@@ -37,9 +37,12 @@ module Peer : sig
     ?allowed_ips:Allowed_ip.t list ->
     unit ->
     t
+
+  (* TODO: modify peer *)
+  (* TODO: remove peer *)
 end
 
-module Device : sig
+module Interface : sig
   type t = {
     name : string;
     ifindex : int;
@@ -61,9 +64,10 @@ module Device : sig
     t
 
   (* TODO: remove this once it is used *)
-  val of_wg_device :
-    (Wireguard.Wg_device.wg_device, [ `Struct ]) Ctypes_static.structured -> t
+  (* val of_wg_device : *)
+  (*   (Wireguard.Wg_device.wg_device, [ `Struct ]) Ctypes_static.structured -> t *)
 
+  val get_device : string -> (t, string) result
   val add_peers : 'a -> 'b -> 'c
   val set_peers : 'a -> 'b -> 'c
   val set_device : t -> (unit, [> `Msg of string ]) result
