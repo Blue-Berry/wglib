@@ -33,6 +33,10 @@ module Key = struct
     key
 
   let to_string (key : t) =
+    CArray.to_list key
+    |> List.map (fun c -> c |> Unsigned.UChar.to_string)
+    |> Base.String.concat ~sep:" "
+    |> print_endline;
     let base64 = CArray.make Ctypes_static.char 44 in
     let () = wg_key_to_base64 (CArray.start base64) (CArray.start key) in
     Ctypes.string_from_ptr
@@ -386,6 +390,15 @@ module Interface = struct
     peers : Peer.t List.t;
   }
 
+  module Config = struct
+    type t = {
+      name : string;
+      private_key : Key.t Option.t;
+      listen_port : int Option.t;
+      peers : Peer.t List.t;
+    }
+  end
+
   let create ~name ?(public_key : Key.t option) ?(private_key : Key.t option)
       ?(fwmark : int option) ?(listen_port : int option) ?peers () =
     let _ = Wireguard.wg_add_device name in
@@ -480,6 +493,7 @@ module Interface = struct
       }
     in
     let flags = getf cdevice Wg_device.flags |> Unsigned.UInt16.to_int in
+    print_endline (flags |> Int.to_string);
     (* Listen port *)
     let device =
       match flags land Wg_device.Wg_device_flags.wgdevice_has_listen_port with
@@ -540,6 +554,7 @@ module Interface = struct
     | _, None -> device
     | None, _ -> device
 
+  (* BUG: beginning of key is wrong when fetching from device *)
   let get_device name =
     let cdevice = make Wg_device.wg_device in
     let cdevice = allocate (ptr Wg_device.wg_device) (addr cdevice) in
@@ -556,6 +571,7 @@ module Interface = struct
 
   let set_device device =
     let cdevice = to_wg_device device in
+    (* NOTE: the private key here is fine *)
     let res = wg_set_device (addr cdevice) in
     (* TODO: create error type with all possible errors *)
     match res with 0 -> Ok () | _ -> Error (`Msg "Failed to set device")

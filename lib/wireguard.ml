@@ -160,10 +160,10 @@ module Wg_device = struct
   let flags = field wg_device "flags" uint16_t
 
   (* let public_key = field wg_device "public_key" wg_key *)
-  let public_key = Array.init 32 (fun _ -> field wg_device "public_key" uchar)
+  let public_key = Array.init 33 (fun _ -> field wg_device "public_key" uchar)
 
   (* let private_key = field wg_device "private_key" wg_key *)
-  let private_key = Array.init 32 (fun _ -> field wg_device "private_key" uchar)
+  let private_key = Array.init 33 (fun _ -> field wg_device "private_key" uchar)
   let fwmark = field wg_device "fwmark" uint32_t
   let listen_port = field wg_device "listen_port" uint16_t
   let first_peer = field wg_device "first_peer" (ptr_opt Wg_peer.wg_peer)

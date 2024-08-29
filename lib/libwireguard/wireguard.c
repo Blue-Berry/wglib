@@ -1067,6 +1067,11 @@ int wg_set_device(wg_device *dev)
 	printf("dev->name: %s\n", dev->name);
 	printf("dev->flags: %d\n", dev->flags);
 	printf("dev->private_key: %s\n", dev->private_key);
+    for (int i =0; i<32; i++) {
+    
+        printf("%d ", dev->private_key[i]);
+    }
+    printf("\n");
 	printf("dev->listen_port: %d\n", dev->listen_port);
 	printf("dev->fwmark: %d\n", dev->fwmark);
 	
