@@ -53,6 +53,15 @@ module Interface : sig
     peers : Peer.t list;
   }
 
+  module Config : sig
+    type t = {
+      name : string;
+      private_key : Key.t Option.t;
+      listen_port : int Option.t;
+      peers : Peer.t List.t;
+    }
+  end
+
   val create :
     name:string ->
     ?public_key:Key.t ->

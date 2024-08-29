@@ -146,9 +146,9 @@ let () =
       ()
   in
   let peers = [ peer1; peer2; peer3 ] in
+  let private_key = Wglib.Wgapi.Key.generate_private_key () in
   let device =
-    Wglib.Wgapi.Interface.create ~name:"wgtest1" ~listen_port:1234
-      ~private_key:(Wglib.Wgapi.Key.generate_private_key ())
+    Wglib.Wgapi.Interface.create ~name:"wgtest1" ~listen_port:1234 ~private_key
       ~peers ()
   in
   let err = Wglib.Wgapi.Interface.set_device device in
@@ -160,9 +160,18 @@ let () =
         | `Msg msg -> print_endline msg
         | _ -> print_endline "Unknown error")
   in
-  ()
-
-let () =
   let device = Wglib.Wgapi.Interface.get_device "wgtest1" |> Result.get_ok in
   print_endline ("Device: " ^ device.name);
-  print_endline ("Index: " ^ Int.to_string device.ifindex)
+  print_endline ("Index: " ^ Int.to_string device.ifindex);
+  print_endline
+    ("Generate Private key: " ^ Wglib.Wgapi.Key.to_string private_key);
+  print_endline
+    ("Generate Public key: "
+    ^ Wglib.Wgapi.Key.to_string
+        (private_key |> Wglib.Wgapi.Key.generate_public_key));
+  print_endline
+    ("fetched private key: "
+    ^ Wglib.Wgapi.Key.to_string (device.private_key |> Option.get));
+  print_endline
+    ("fetched public key: "
+    ^ Wglib.Wgapi.Key.to_string (device.public_key |> Option.get))
