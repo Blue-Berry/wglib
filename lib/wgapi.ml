@@ -33,6 +33,10 @@ module Key = struct
     key
 
   let to_string (key : t) =
+    CArray.to_list key
+    |> List.map (fun c -> c |> Unsigned.UChar.to_string)
+    |> Base.String.concat ~sep:" "
+    |> print_endline;
     let base64 = CArray.make Ctypes_static.char 44 in
     let () = wg_key_to_base64 (CArray.start base64) (CArray.start key) in
     Ctypes.string_from_ptr
