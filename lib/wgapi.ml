@@ -554,7 +554,6 @@ module Interface = struct
     | _, None -> device
     | None, _ -> device
 
-  (* BUG: beginning of key is wrong when fetching from device *)
   let get_device name =
     let cdevice = make Wg_device.wg_device in
     let cdevice = allocate (ptr Wg_device.wg_device) (addr cdevice) in
@@ -571,7 +570,6 @@ module Interface = struct
 
   let set_device device =
     let cdevice = to_wg_device device in
-    (* NOTE: the private key here is fine *)
     let res = wg_set_device (addr cdevice) in
     (* TODO: create error type with all possible errors *)
     match res with 0 -> Ok () | _ -> Error (`Msg "Failed to set device")
