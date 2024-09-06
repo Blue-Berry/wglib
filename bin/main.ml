@@ -166,12 +166,12 @@ let () =
   print_endline
     ("Generate Private key: " ^ Wglib.Wgapi.Key.to_string private_key);
   print_endline
+    ("fetched private key: "
+    ^ Wglib.Wgapi.Key.to_string (device.private_key |> Option.get));
+  print_endline
     ("Generate Public key: "
     ^ Wglib.Wgapi.Key.to_string
         (private_key |> Wglib.Wgapi.Key.generate_public_key));
-  print_endline
-    ("fetched private key: "
-    ^ Wglib.Wgapi.Key.to_string (device.private_key |> Option.get));
   print_endline
     ("fetched public key: "
     ^ Wglib.Wgapi.Key.to_string (device.public_key |> Option.get))
