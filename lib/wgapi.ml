@@ -1,5 +1,6 @@
 open Wireguard
 
+let af_local = 1
 let af_inet = 2
 let af_inet6 = 10
 
@@ -161,6 +162,81 @@ module Allowed_ip = struct
 end
 
 (* TODO: define endpoint *)
+
+module Endpoint = struct
+  open Ctypes
+
+  type t = { addr : [ `V4 of Ipaddr.V4.t | `V6 of Ipaddr.V6.t ]; port : int }
+  (* Unix.ADDR_UNIX *)
+
+  let to_wg_endpoint e =
+    let port = Unsigned.UInt16.of_int e.port in
+    let cendpoint = make Wg_endpoint.wg_endpoint in
+    match e.addr with
+    | `V4 addr ->
+        let caddr = make Socket.Sockaddr_in.sockaddr_in in
+        setf caddr Socket.Sockaddr_in.sin_family
+          (Unsigned.UInt16.of_int af_inet);
+        setf caddr Socket.Sockaddr_in.sin_addr
+          (Ipaddr.V4.to_int32 addr |> Unsigned.UInt32.of_int32);
+        setf caddr Socket.Sockaddr_in.sin_port port;
+        setf cendpoint Wg_endpoint.addr4 caddr;
+        cendpoint
+    | `V6 addr ->
+        let caddr = make Socket.Sockaddr_in6.sockaddr_in6 in
+        setf caddr Socket.Sockaddr_in6.sin6_family
+          (Unsigned.UInt16.of_int af_inet6);
+        setf caddr Socket.Sockaddr_in6.sin6_port port;
+        let ip_buf = Buffer.create 16 in
+        Ipaddr.V6.to_buffer ip_buf addr;
+        Array.iteri
+          (fun i c ->
+            setf caddr c
+              (Buffer.nth ip_buf i |> Base.Char.to_int |> Unsigned.UInt8.of_int))
+          Socket.Sockaddr_in6.sin6_addr;
+        setf cendpoint Wg_endpoint.addr6 caddr;
+        cendpoint
+
+  let of_wg_endpoint e =
+    let family =
+      getf (getf e Wg_endpoint.addr) Socket.Sockaddr.sa_family
+      |> Unsigned.UInt16.to_int
+    in
+    match family with
+    | x when x == af_local ->
+        let addr = getf e Wg_endpoint.addr in
+        let _sa_data =
+          Array.map (fun c -> getf addr c) Socket.Sockaddr.sa_data
+        in
+        (* TODO: implent local socket addr *)
+        failwith "Not implemented"
+    | x when x == af_inet ->
+        let addr = getf e Wg_endpoint.addr4 in
+        let port =
+          getf addr Socket.Sockaddr_in.sin_port |> Unsigned.UInt16.to_int
+        in
+        let addr =
+          getf addr Socket.Sockaddr_in.sin_addr
+          |> Unsigned.UInt32.to_int32 |> Ipaddr.V4.of_int32
+        in
+        { addr = `V4 addr; port }
+    | x when x == af_inet6 ->
+        let addr = getf e Wg_endpoint.addr6 in
+        let port =
+          getf addr Socket.Sockaddr_in6.sin6_port |> Unsigned.UInt16.to_int
+        in
+        let addr =
+          Array.map (fun c -> getf addr c) Socket.Sockaddr_in6.sin6_addr
+        in
+        let addr =
+          Ipaddr.V6.of_octets_exn
+            (Array.map Unsigned.UInt8.to_int addr
+            |> Array.map Char.chr |> Array.to_list |> Base.String.of_list)
+        in
+        { addr = `V6 addr; port }
+    | _ -> failwith "Invalid family"
+end
+
 module Peer = struct
   open Ctypes
 
@@ -172,7 +248,7 @@ module Peer = struct
   type t = {
     public_key : Key.t Option.t;
     preshared_key : Key.t Option.t;
-    endpoint : Unix.sockaddr Option.t;
+    endpoint : Endpoint.t Option.t;
     last_handshake_time : Float.t;
     rx_bytes : int;
     tx_bytes : int;
@@ -181,7 +257,7 @@ module Peer = struct
   }
 
   let create ?(public_key : Key.t option) ?(preshared_key : Key.t option)
-      ?(endpoint : Unix.sockaddr option)
+      ?(endpoint : Endpoint.t option)
       ?(persistent_keepalive_interval : int option) ?allowed_ips () =
     {
       public_key;
@@ -260,6 +336,13 @@ module Peer = struct
     setf cpeer Wg_peer.flags (Unsigned.UInt16.of_int !flags);
 
     (* Set endpoint *)
+    let () =
+      match peer.endpoint with
+      | None -> ()
+      | Some endpoint ->
+          let cendpoint = Endpoint.to_wg_endpoint endpoint in
+          setf cpeer Wg_peer.endpoint cendpoint
+    in
     (* let () = failwith "Not implemented" in *)
     cpeer
 

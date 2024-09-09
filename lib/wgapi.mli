@@ -17,11 +17,19 @@ module Allowed_ip : sig
   type t = { ip : Ip.t; cidr : Unsigned.uint8 }
 end
 
+module Endpoint : sig
+  type t = { addr : [ `V4 of Ipaddr.V4.t | `V6 of Ipaddr.V6.t ]; port : int }
+
+  val of_wg_endpoint :
+    (Wireguard.Wg_endpoint.wg_endpoint, [ `Union ]) Ctypes_static.structured ->
+    t
+end
+
 module Peer : sig
   type t = {
     public_key : Key.t option;
     preshared_key : Key.t option;
-    endpoint : Unix.sockaddr option;
+    endpoint : Endpoint.t option;
     last_handshake_time : float;
     rx_bytes : int;
     tx_bytes : int;
@@ -32,7 +40,7 @@ module Peer : sig
   val create :
     ?public_key:Key.t ->
     ?preshared_key:Key.t ->
-    ?endpoint:Unix.sockaddr ->
+    ?endpoint:Endpoint.t ->
     ?persistent_keepalive_interval:int ->
     ?allowed_ips:Allowed_ip.t list ->
     unit ->
@@ -56,9 +64,9 @@ module Interface : sig
   module Config : sig
     type t = {
       name : string;
-      private_key : Key.t Option.t;
-      listen_port : int Option.t;
-      peers : Peer.t List.t;
+      private_key : Key.t option;
+      listen_port : int option;
+      peers : Peer.t list;
     }
   end
 

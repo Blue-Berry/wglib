@@ -127,11 +127,14 @@ let () =
         let allowed_ip : Wglib.Wgapi.Allowed_ip.t = { ip; cidr } in
         allowed_ip)
   in
+  let endpoint : Wglib.Wgapi.Endpoint.t =
+    { addr = `V4 (Ipaddr.V4.of_string_exn "10.10.10.10"); port = 0b1010 }
+  in
   let peer1 =
     Wglib.Wgapi.Peer.create ~persistent_keepalive_interval:10
       ~public_key:
         Wglib.Wgapi.Key.(generate_private_key () |> generate_public_key)
-      ~allowed_ips ()
+      ~allowed_ips ~endpoint ()
   in
   let peer2 =
     Wglib.Wgapi.Peer.create
