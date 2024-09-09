@@ -225,7 +225,7 @@ module Endpoint = struct
           getf addr Socket.Sockaddr_in.sin_addr
           |> Unsigned.UInt32.to_int32 |> Ipaddr.V4.of_int32
         in
-        { addr = `V4 addr; port }
+        Some { addr = `V4 addr; port }
     | x when x == af_inet6 ->
         let addr = getf e Wg_endpoint.addr6 in
         let port =
@@ -239,8 +239,10 @@ module Endpoint = struct
             (Array.map Unsigned.UInt8.to_int addr
             |> Array.map Char.chr |> Array.to_list |> Base.String.of_list)
         in
-        { addr = `V6 addr; port }
-    | _ -> failwith "Invalid family"
+        Some { addr = `V6 addr; port }
+    | x ->
+        print_endline ("Failed" ^ (x |> Int.to_string));
+        failwith "Invalid family"
 end
 
 module Peer = struct
@@ -400,10 +402,11 @@ module Peer = struct
       | Some first, Some last -> Allowed_ip.list_of_first_last first last
       | _, _ -> []
     in
+    let endpoint = getf peer Wg_peer.endpoint |> Endpoint.of_wg_endpoint in
     {
       public_key;
       preshared_key;
-      endpoint = None;
+      endpoint;
       last_handshake_time;
       rx_bytes;
       tx_bytes;
@@ -413,7 +416,7 @@ module Peer = struct
 
   let list_of_first_last (start : p) (stop : p) : t list =
     let rec loop acc current : s list =
-      if current == stop then acc
+      if current == stop then !@current :: acc
       else
         let next = getf !@current Wg_peer.next_peer in
         match next with
@@ -561,6 +564,7 @@ module Interface = struct
     let () = setf cdevice Wg_device.flags (Unsigned.UInt16.of_int !flags) in
     (* set first and last peer *)
     let first_peer, last_peer = Peer.first_last_of_list device.peers in
+    print_endline (ptr_diff first_peer last_peer |> Int.to_string);
     let () = setf cdevice Wg_device.first_peer (Some first_peer) in
     let () = setf cdevice Wg_device.last_peer (Some last_peer) in
     cdevice
@@ -578,7 +582,6 @@ module Interface = struct
       }
     in
     let flags = getf cdevice Wg_device.flags |> Unsigned.UInt16.to_int in
-    print_endline (flags |> Int.to_string);
     (* Listen port *)
     let device =
       match flags land Wg_device.Wg_device_flags.wgdevice_has_listen_port with
@@ -633,6 +636,9 @@ module Interface = struct
     in
     let first_peer = getf cdevice Wg_device.first_peer in
     let last_peer = getf cdevice Wg_device.last_peer in
+    print_endline
+      (ptr_diff (first_peer |> Option.get) (last_peer |> Option.get)
+      |> Int.to_string);
     match (first_peer, last_peer) with
     | Some first, Some last ->
         { device with peers = Peer.list_of_first_last first last }

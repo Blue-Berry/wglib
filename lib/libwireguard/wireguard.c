@@ -1063,13 +1063,15 @@ cleanup:
 
 int wg_set_device(wg_device *dev)
 {
-    printf("wg_set_device\n");
-	printf("dev->name: %s\n", dev->name);
-	printf("dev->flags: %d\n", dev->flags);
-	printf("dev->private_key: %s\n", dev->private_key);
-    printf("\n");
-	printf("dev->listen_port: %d\n", dev->listen_port);
-	printf("dev->fwmark: %d\n", dev->fwmark);
+ //    printf("wg_set_device\n");
+	// printf("dev->name: %s\n", dev->name);
+	// printf("dev->flags: %d\n", dev->flags);
+	// printf("dev->private_key: %s\n", dev->private_key);
+ //    printf("\n");
+	// printf("dev->listen_port: %d\n", dev->listen_port);
+	// printf("dev->fwmark: %d\n", dev->fwmark);
+    printf("%d\n", dev->first_peer);
+    printf("%d\n", dev->last_peer);
 	
 	int ret = 0;
 	wg_peer *peer = NULL;

@@ -1,120 +1,3 @@
-(*
-open Ctypes
-open Wglib.Wireguard
-
-(* -------------------------- CTypes way -------------------------- *)
- let new_peer = make Wg_peer.wg_peer
-   let () = setf new_peer Wg_peer.flags (Unsigned.UInt16.of_int 6)
-
-   let () =
-     let private_key = Wglib.Wgapi.Key.generate_private_key () in
-     let public_key = Wglib.Wgapi.Key.generate_public_key private_key in
-     let () =
-       CArray.iteri
-         (fun i c ->
-           Ctypes.setf new_peer (Array.get Wglib.Wireguard.Wg_peer.public_key i) c)
-         public_key
-     in
-     ()
-
-   let device = make Wg_device.wg_device
-
-   let () =
-     let () =
-       let name = "wgtest0" |> String.to_seq |> Array.of_seq in
-       Array.iteri
-         (fun i c ->
-           Ctypes.setf device (Array.get Wglib.Wireguard.Wg_device.name i) c)
-         name
-     in
-     let () = setf device Wg_device.flags (Unsigned.UInt16.of_int 10) in
-     let () = setf device Wg_device.listen_port (Unsigned.UInt16.of_int 1234) in
-     let private_key = Wglib.Wgapi.Key.generate_private_key () in
-     let () =
-       CArray.iteri
-         (fun i c ->
-           Ctypes.setf device (Array.get Wglib.Wireguard.Wg_device.private_key i) c)
-         private_key
-     in
-     let () = setf device Wg_device.first_peer (Some (Ctypes.addr new_peer)) in
-     let () = setf device Wg_device.last_peer (Some (Ctypes.addr new_peer)) in
-     ()
-
-   let () =
-     print_endline
-       ("Size: "
-       ^ (Ctypes.sizeof Wglib.Wireguard.Wg_device.wg_device |> Int.to_string))
-
-   let name =
-     Array.fold_left
-       (fun acc c -> acc ^ String.make 1 (Ctypes.getf device c))
-       "" Wglib.Wireguard.Wg_device.name
-
-   let () = print_endline ("Name: " ^ name)
-
-   let () =
-     let index = Ctypes.getf device Wglib.Wireguard.Wg_device.ifindex in
-     print_endline ("Index: " ^ Unsigned.UInt32.to_string index)
-
-   let () =
-     print_endline
-       ("Flags: "
-       ^ (Ctypes.getf device Wglib.Wireguard.Wg_device.flags
-         |> Unsigned.UInt16.to_string))
-
-   let () =
-     print_endline
-       ("Fwmark:"
-       ^ (Ctypes.getf device Wglib.Wireguard.Wg_device.fwmark
-         |> Unsigned.UInt32.to_string))
-
-   let () =
-     print_endline
-       ("Port: "
-       ^ (Ctypes.getf device Wglib.Wireguard.Wg_device.listen_port
-         |> Unsigned.UInt16.to_string))
-
-   let new_device = Ctypes.make Wglib.Wireguard.Wg_device.wg_device
-
-   let () =
-     Ctypes.setf new_device Wglib.Wireguard.Wg_device.listen_port
-       (Unsigned.UInt16.of_int 1234)
-
-   let () =
-     Ctypes.setf new_device Wglib.Wireguard.Wg_device.flags
-       (Unsigned.UInt16.of_int 10)
-
-   let err = Wglib.Wireguard.wg_del_device name
-   let () = Printf.printf "wg_del_device: %d\n" err
-   let err = Wglib.Wireguard.wg_add_device name
-   let () = Printf.printf "wg_add_device: %d\n" err
-   let err = Wglib.Wireguard.wg_set_device (Ctypes.addr device)
-   let () = Printf.printf "wg_set_device: %d\n" err *)
-
-(* -------------------------- WgApi way -------------------------- *)
-(*
-  steps for configureing wireguard device:
-    1. generate private key
-    2. generate public key
-    3. create new peer
-    4. set peer public key
-    5. set peer flags
-    6. create new device
-    7. set device name
-    8. set device flags
-    9. set device listen port
-    10. set device private key
-    11. set device first peer
-    12. set device last peer
-    13. add device
-    14. set device
-  *)
-
-let () =
-  Printf.printf "\n";
-  print_endline "WgApi way";
-  Printf.printf "\n"
-
 let () =
   let allowed_ips : Wglib.Wgapi.Allowed_ip.t list =
     List.init 5 (fun i ->
@@ -155,7 +38,7 @@ let () =
         Wglib.Wgapi.Key.(generate_private_key () |> generate_public_key)
       ()
   in
-  let peers = [ peer1; peer2; peer3 ] in
+  let peers = [ peer1; peer2; peer3; peer2; peer3; peer1 ] in
   let private_key = Wglib.Wgapi.Key.generate_private_key () in
   let device =
     Wglib.Wgapi.Interface.create ~name:"wgtest1" ~listen_port:1234 ~private_key
@@ -171,17 +54,24 @@ let () =
         | _ -> print_endline "Unknown error")
   in
   let device = Wglib.Wgapi.Interface.get_device "wgtest1" |> Result.get_ok in
-  print_endline ("Device: " ^ device.name);
-  print_endline ("Index: " ^ Int.to_string device.ifindex);
-  print_endline
-    ("Generate Private key: " ^ Wglib.Wgapi.Key.to_string private_key);
-  print_endline
-    ("fetched private key: "
-    ^ Wglib.Wgapi.Key.to_string (device.private_key |> Option.get));
-  print_endline
-    ("Generate Public key: "
-    ^ Wglib.Wgapi.Key.to_string
-        (private_key |> Wglib.Wgapi.Key.generate_public_key));
-  print_endline
-    ("fetched public key: "
-    ^ Wglib.Wgapi.Key.to_string (device.public_key |> Option.get))
+  let endpoints =
+    List.map (fun (peer : Wglib.Wgapi.Peer.t) -> peer.endpoint) device.peers
+  in
+  let () =
+    print_endline ("Peer number: " ^ (List.length device.peers |> string_of_int))
+  in
+  let endpoints =
+    List.fold_left
+      (fun acc e ->
+        match e with
+        | None -> "None - " ^ acc
+        | Some (endpoint : Wglib.Wgapi.Endpoint.t) ->
+            let str =
+              match endpoint.addr with
+              | `V4 ip -> Ipaddr.V4.to_string ip
+              | `V6 ip -> Ipaddr.V6.to_string ip
+            in
+            str ^ " - " ^ acc)
+      "" endpoints
+  in
+  print_endline ("Peer endpoint: " ^ endpoints)

@@ -19,10 +19,6 @@ end
 
 module Endpoint : sig
   type t = { addr : [ `V4 of Ipaddr.V4.t | `V6 of Ipaddr.V6.t ]; port : int }
-
-  val of_wg_endpoint :
-    (Wireguard.Wg_endpoint.wg_endpoint, [ `Union ]) Ctypes_static.structured ->
-    t
 end
 
 module Peer : sig
