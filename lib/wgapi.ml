@@ -170,7 +170,13 @@ module Endpoint = struct
   (* Unix.ADDR_UNIX *)
 
   let to_wg_endpoint e =
+    (* Note: high and low byte of port are swapped so need to be swapped here*)
     let port = Unsigned.UInt16.of_int e.port in
+    let port =
+      Unsigned.UInt16.logor
+        (Unsigned.UInt16.shift_left port 8)
+        (Unsigned.UInt16.shift_right port 8)
+    in
     let cendpoint = make Wg_endpoint.wg_endpoint in
     match e.addr with
     | `V4 addr ->

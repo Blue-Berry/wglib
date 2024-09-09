@@ -128,7 +128,11 @@ let () =
         allowed_ip)
   in
   let endpoint : Wglib.Wgapi.Endpoint.t =
-    { addr = `V4 (Ipaddr.V4.of_string_exn "10.10.10.10"); port = 0b1010 }
+    {
+      addr =
+        `V6 (Ipaddr.V6.of_string_exn "2001:0000:130F:0000:0000:09C0:876A:130B");
+      port = 4321;
+    }
   in
   let peer1 =
     Wglib.Wgapi.Peer.create ~persistent_keepalive_interval:10
@@ -136,11 +140,14 @@ let () =
         Wglib.Wgapi.Key.(generate_private_key () |> generate_public_key)
       ~allowed_ips ~endpoint ()
   in
+  let endpoint : Wglib.Wgapi.Endpoint.t =
+    { addr = `V4 (Ipaddr.V4.of_string_exn "10.10.10.10"); port = 1234 }
+  in
   let peer2 =
     Wglib.Wgapi.Peer.create
       ~public_key:
         Wglib.Wgapi.Key.(generate_private_key () |> generate_public_key)
-      ()
+      ~endpoint ()
   in
   let peer3 =
     Wglib.Wgapi.Peer.create
