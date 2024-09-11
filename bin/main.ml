@@ -39,9 +39,18 @@ let () =
     | Error err ->
         Wglib.Wgapi.Interface.DeviceError.to_string err |> print_endline
   in
+  Unix.sleep 5;
   let () =
     match Wglib.Wgapi.Interface.add_peers device peers with
     | Ok () -> print_endline "Peers added successfully"
+    | Error err ->
+        Wglib.Wgapi.Interface.DeviceError.to_string err |> print_endline
+  in
+
+  Unix.sleep 5;
+  let () =
+    match Wglib.Wgapi.Interface.set_peers device [] with
+    | Ok () -> print_endline "Peers removed successfully"
     | Error err ->
         Wglib.Wgapi.Interface.DeviceError.to_string err |> print_endline
   in

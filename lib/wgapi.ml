@@ -815,7 +815,13 @@ ERANGE		34	/* Math result not representable */
     let res = wg_set_device (addr cdevice) in
     DeviceError.of_int res
 
-  let set_peers _device _peers = failwith "Not implemented"
+  let set_peers device peers =
+    let device = { device with peers } in
+    let cdevice = to_wg_device device in
+    setf cdevice Wg_device.flags
+      (Unsigned.UInt32.of_int Wg_device.Wg_device_flags.wgdevice_replace_peers);
+    wg_set_device (addr cdevice) |> DeviceError.of_int
+
   let configure_peer _peer = failwith "Not implemented"
   let remove_peer _peer = failwith "Not implemented"
   let configure_peers _peers = failwith "Not implemented"

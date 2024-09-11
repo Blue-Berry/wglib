@@ -127,7 +127,7 @@ module Interface : sig
 
   val set_device : t -> (unit, DeviceError.t) result
   val add_peers : t -> Peer.t list -> (unit, DeviceError.t) result
-  val set_peers : 'a -> 'b -> 'c
+  val set_peers : t -> Peer.t list -> (unit, DeviceError.t) result
   val configure_peer : 'a -> 'b
   val remove_peer : 'a -> 'b
   val configure_peers : 'a -> 'b
