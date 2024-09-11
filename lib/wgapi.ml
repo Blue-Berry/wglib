@@ -563,7 +563,6 @@ module Interface = struct
     let () = setf cdevice Wg_device.flags (Unsigned.UInt32.of_int !flags) in
     (* set first and last peer *)
     let first_peer, last_peer = Peer.first_last_of_list device.peers in
-    print_endline (ptr_diff first_peer last_peer |> Int.to_string);
     let () = setf cdevice Wg_device.first_peer (Some first_peer) in
     let () = setf cdevice Wg_device.last_peer (Some last_peer) in
     cdevice
@@ -635,9 +634,6 @@ module Interface = struct
     in
     let first_peer = getf cdevice Wg_device.first_peer in
     let last_peer = getf cdevice Wg_device.last_peer in
-    print_endline
-      (ptr_diff (first_peer |> Option.get) (last_peer |> Option.get)
-      |> Int.to_string);
     match (first_peer, last_peer) with
     | Some first, Some last ->
         { device with peers = Peer.list_of_first_last first last }
@@ -658,11 +654,158 @@ module Interface = struct
   let add_peers _device _peers = failwith "Not implemented"
   let set_peers _device _peers = failwith "Not implemented"
 
+  module DeviceError = struct
+    (**
+EPERM		 1	/* Operation not permitted */
+ENOENT		 2	/* No such file or directory */
+ESRCH		 3	/* No such process */
+EINTR		 4	/* Interrupted system call */
+EIO		     5	/* I/O error */
+ENXIO		 6	/* No such device or address */
+E2BIG		 7	/* Argument list too long */
+ENOEXEC		 8	/* Exec format error */
+EBADF		 9	/* Bad file number */
+ECHILD		10	/* No child processes */
+EAGAIN		11	/* Try again */
+ENOMEM		12	/* Out of memory */
+EACCES		13	/* Permission denied */
+EFAULT		14	/* Bad address */
+ENOTBLK		15	/* Block device required */
+EBUSY		16	/* Device or resource busy */
+EEXIST		17	/* File exists */
+EXDEV		18	/* Cross-device link */
+ENODEV		19	/* No such device */
+ENOTDIR		20	/* Not a directory */
+EISDIR		21	/* Is a directory */
+EINVAL		22	/* Invalid argument */
+ENFILE		23	/* File table overflow */
+EMFILE		24	/* Too many open files */
+ENOTTY		25	/* Not a typewriter */
+ETXTBSY		26	/* Text file busy */
+EFBIG		27	/* File too large */
+ENOSPC		28	/* No space left on device */
+ESPIPE		29	/* Illegal seek */
+EROFS		30	/* Read-only file system */
+EMLINK		31	/* Too many links */
+EPIPE		32	/* Broken pipe */
+EDOM		33	/* Math argument out of domain of func */
+ERANGE		34	/* Math result not representable */  
+*)
+    type t =
+      | EPERM
+      | ENOENT
+      | ESRCH
+      | EINTR
+      | EIO
+      | ENXIO
+      | E2BIG
+      | ENOEXEC
+      | EBADF
+      | ECHILD
+      | EAGAIN
+      | ENOMEM
+      | EACCES
+      | EFAULT
+      | ENOTBLK
+      | EBUSY
+      | EEXIST
+      | EXDEV
+      | ENODEV
+      | ENOTDIR
+      | EISDIR
+      | EINVAL
+      | ENFILE
+      | EMFILE
+      | ENOTTY
+      | ETXTBSY
+      | EFBIG
+      | ENOSPC
+      | ESPIPE
+      | EROFS
+      | EMLINK
+      | EPIPE
+      | EDOM
+      | ERANGE
+
+    let to_string e =
+      match e with
+      | EPERM -> "Operation not permitted"
+      | ENOENT -> "No such file or directory"
+      | ESRCH -> "No such process"
+      | EINTR -> "Interrupted system call"
+      | EIO -> "I/O error"
+      | ENXIO -> "No such device or address"
+      | E2BIG -> "Argument list too long"
+      | ENOEXEC -> "Exec format error"
+      | EBADF -> "Bad file number"
+      | ECHILD -> "No child processes"
+      | EAGAIN -> "Try again"
+      | ENOMEM -> "Out of memory"
+      | EACCES -> "Permission denied"
+      | EFAULT -> "Bad address"
+      | ENOTBLK -> "Block device required"
+      | EBUSY -> "Device or resource busy"
+      | EEXIST -> "File exists"
+      | EXDEV -> "Cross-device link"
+      | ENODEV -> "No such device"
+      | ENOTDIR -> "Not a directory"
+      | EISDIR -> "Is a directory"
+      | EINVAL -> "Invalid argument"
+      | ENFILE -> "File table overflow"
+      | EMFILE -> "Too many open files"
+      | ENOTTY -> "Not a typewriter"
+      | ETXTBSY -> "Text file busy"
+      | EFBIG -> "File too large"
+      | ENOSPC -> "No space left on device"
+      | ESPIPE -> "Illegal seek"
+      | EROFS -> "Read-only file system"
+      | EMLINK -> "Too many links"
+      | EPIPE -> "Broken pipe"
+      | EDOM -> "Math argument out of domain of func"
+      | ERANGE -> "Math result not representable"
+  end
+
   let set_device device =
     let cdevice = to_wg_device device in
     let res = wg_set_device (addr cdevice) in
     (* TODO: create error type with all possible errors *)
-    match res with 0 -> Ok () | _ -> Error (`Msg "Failed to set device")
+    match res * -1 with
+    | 0 -> Ok ()
+    | 1 -> Error DeviceError.EPERM
+    | 2 -> Error ENOENT
+    | 3 -> Error ESRCH
+    | 4 -> Error EINTR
+    | 5 -> Error EIO
+    | 6 -> Error ENXIO
+    | 7 -> Error E2BIG
+    | 8 -> Error ENOEXEC
+    | 9 -> Error EBADF
+    | 10 -> Error ECHILD
+    | 11 -> Error EAGAIN
+    | 12 -> Error ENOMEM
+    | 13 -> Error EACCES
+    | 14 -> Error EFAULT
+    | 15 -> Error ENOTBLK
+    | 16 -> Error EBUSY
+    | 17 -> Error EEXIST
+    | 18 -> Error EXDEV
+    | 19 -> Error ENODEV
+    | 20 -> Error ENOTDIR
+    | 21 -> Error EISDIR
+    | 22 -> Error EINVAL
+    | 23 -> Error ENFILE
+    | 24 -> Error EMFILE
+    | 25 -> Error ENOTTY
+    | 26 -> Error ETXTBSY
+    | 27 -> Error EFBIG
+    | 28 -> Error ENOSPC
+    | 29 -> Error ESPIPE
+    | 30 -> Error EROFS
+    | 31 -> Error EMLINK
+    | 32 -> Error EPIPE
+    | 33 -> Error EDOM
+    | 34 -> Error ERANGE
+    | e -> failwith ("Unknown error: " ^ (e |> Int.to_string))
 
   let configure_peer _peer = failwith "Not implemented"
   let remove_peer _peer = failwith "Not implemented"

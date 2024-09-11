@@ -76,14 +76,57 @@ module Interface : sig
     unit ->
     t
 
-  (* TODO: remove this once it is used *)
-  (* val of_wg_device : *)
-  (*   (Wireguard.Wg_device.wg_device, [ `Struct ]) Ctypes_static.structured -> t *)
+  val to_wg_device :
+    t -> (Wireguard.Wg_device.wg_device, [ `Struct ]) Ctypes_static.structured
+
+  val of_wg_device :
+    (Wireguard.Wg_device.wg_device, [ `Struct ]) Ctypes_static.structured -> t
 
   val get_device : string -> (t, string) result
   val add_peers : 'a -> 'b -> 'c
   val set_peers : 'a -> 'b -> 'c
-  val set_device : t -> (unit, [> `Msg of string ]) result
+
+  module DeviceError : sig
+    type t =
+      | EPERM
+      | ENOENT
+      | ESRCH
+      | EINTR
+      | EIO
+      | ENXIO
+      | E2BIG
+      | ENOEXEC
+      | EBADF
+      | ECHILD
+      | EAGAIN
+      | ENOMEM
+      | EACCES
+      | EFAULT
+      | ENOTBLK
+      | EBUSY
+      | EEXIST
+      | EXDEV
+      | ENODEV
+      | ENOTDIR
+      | EISDIR
+      | EINVAL
+      | ENFILE
+      | EMFILE
+      | ENOTTY
+      | ETXTBSY
+      | EFBIG
+      | ENOSPC
+      | ESPIPE
+      | EROFS
+      | EMLINK
+      | EPIPE
+      | EDOM
+      | ERANGE
+
+    val to_string : t -> string
+  end
+
+  val set_device : t -> (unit, DeviceError.t) result
   val configure_peer : 'a -> 'b
   val remove_peer : 'a -> 'b
   val configure_peers : 'a -> 'b
