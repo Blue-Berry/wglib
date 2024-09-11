@@ -161,8 +161,6 @@ module Allowed_ip = struct
     loop [] first |> List.map of_wg_allowed_ip
 end
 
-(* TODO: define endpoint *)
-
 module Endpoint = struct
   open Ctypes
 
@@ -765,10 +763,10 @@ ERANGE		34	/* Math result not representable */
       | ERANGE -> "Math result not representable"
   end
 
+  (* BUG: Cant add 90+ devices at once *)
   let set_device device =
     let cdevice = to_wg_device device in
     let res = wg_set_device (addr cdevice) in
-    (* TODO: create error type with all possible errors *)
     match res * -1 with
     | 0 -> Ok ()
     | 1 -> Error DeviceError.EPERM

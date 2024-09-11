@@ -18,7 +18,7 @@ let () =
     }
   in
   let peers =
-    List.init 90 (fun i ->
+    List.init 80 (fun i ->
         Wglib.Wgapi.Peer.create
           ~public_key:
             Wglib.Wgapi.Key.(generate_private_key () |> generate_public_key)
