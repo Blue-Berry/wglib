@@ -1070,8 +1070,6 @@ int wg_set_device(wg_device *dev)
  //    printf("\n");
 	// printf("dev->listen_port: %d\n", dev->listen_port);
 	// printf("dev->fwmark: %d\n", dev->fwmark);
-    printf("%d\n", dev->first_peer);
-    printf("%d\n", dev->last_peer);
 	
 	int ret = 0;
 	wg_peer *peer = NULL;
@@ -1085,7 +1083,6 @@ int wg_set_device(wg_device *dev)
 		return -errno;
 
 again:
-	printf("again\n");
 	nlh = mnlg_msg_prepare(nlg, WG_CMD_SET_DEVICE, NLM_F_REQUEST | NLM_F_ACK);
 	mnl_attr_put_strz(nlh, WGDEVICE_A_IFNAME, dev->name);
 
@@ -1188,7 +1185,6 @@ toobig_peers:
 	mnl_attr_nest_end(nlh, peers_nest);
 	goto send;
 send:
-	printf("send\n");
 	if (mnlg_socket_send(nlg, nlh) < 0) {
 		ret = -errno;
 		goto out;
@@ -1202,8 +1198,6 @@ send:
 		goto again;
 
 out:
-	printf("out\n");
-	printf("ret: %d\n", ret);
 	mnlg_socket_close(nlg);
 	errno = -ret;
 	return ret;
