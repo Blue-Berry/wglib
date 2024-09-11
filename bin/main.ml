@@ -17,8 +17,8 @@ let () =
       port = 4321;
     }
   in
-  let peers =
-    List.init 5 (fun i ->
+  let _peers =
+    List.init 10 (fun i ->
         let endpoint = Wglib.Wgapi.Endpoint.{ endpoint with port = 4321 + i } in
         Wglib.Wgapi.Peer.create
           ~public_key:
@@ -39,20 +39,41 @@ let () =
     | Error err ->
         Wglib.Wgapi.Interface.DeviceError.to_string err |> print_endline
   in
-  Unix.sleep 5;
   let () =
-    match Wglib.Wgapi.Interface.add_peers device peers with
-    | Ok () -> print_endline "Peers added successfully"
-    | Error err ->
-        Wglib.Wgapi.Interface.DeviceError.to_string err |> print_endline
+    let rec loop = function
+      | 0 -> ()
+      | n ->
+          let new_peers =
+            List.init 20 (fun i ->
+                let endpoint =
+                  Wglib.Wgapi.Endpoint.{ endpoint with port = 4321 + i }
+                in
+                Wglib.Wgapi.Peer.create
+                  ~public_key:
+                    Wglib.Wgapi.Key.(
+                      generate_private_key () |> generate_public_key)
+                  ~endpoint
+                  ~allowed_ips:[ allowed_ip i ]
+                  ())
+          in
+          let () =
+            match Wglib.Wgapi.Interface.add_peers device new_peers with
+            | Ok () -> print_endline "Peers added successfully"
+            | Error err ->
+                Wglib.Wgapi.Interface.DeviceError.to_string err |> print_endline
+          in
+          loop (n - 1)
+    in
+    loop 50
   in
 
-  Unix.sleep 5;
-  let () =
-    match Wglib.Wgapi.Interface.set_peers device [] with
-    | Ok () -> print_endline "Peers removed successfully"
-    | Error err ->
-        Wglib.Wgapi.Interface.DeviceError.to_string err |> print_endline
-  in
-  let _device = Wglib.Wgapi.Interface.get_device "wgtest1" |> Result.get_ok in
+  (* Unix.sleep 5; *)
+  (* let () = *)
+  (*   match Wglib.Wgapi.Interface.set_peers device [] with *)
+  (*   | Ok () -> print_endline "Peers removed successfully" *)
+  (*   | Error err -> *)
+  (*       Wglib.Wgapi.Interface.DeviceError.to_string err |> print_endline *)
+  (* in *)
+  let device = Wglib.Wgapi.Interface.get_device "wgtest1" |> Result.get_ok in
+  print_endline ("Peers: " ^ Int.to_string (List.length device.peers));
   ()

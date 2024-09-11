@@ -810,8 +810,7 @@ ERANGE		34	/* Math result not representable */
   let add_peers device peers =
     let device = { device with peers } in
     let cdevice = to_wg_device device in
-    setf cdevice Wg_device.flags
-      (Unsigned.UInt32.of_int Wg_device.Wg_device_flags.wgdevice_replace_peers);
+    setf cdevice Wg_device.flags (Unsigned.UInt32.of_int 0);
     let res = wg_set_device (addr cdevice) in
     DeviceError.of_int res
 
