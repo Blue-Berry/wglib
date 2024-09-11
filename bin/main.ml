@@ -38,7 +38,13 @@ let () =
         Wglib.Wgapi.Key.(generate_private_key () |> generate_public_key)
       ()
   in
-  let peers = [ peer1; peer2; peer3; peer2; peer3; peer1 ] in
+  let peer4 =
+    Wglib.Wgapi.Peer.create
+      ~public_key:
+        Wglib.Wgapi.Key.(generate_private_key () |> generate_public_key)
+      ()
+  in
+  let peers = [ peer1; peer2; peer3; peer4 ] in
   let private_key = Wglib.Wgapi.Key.generate_private_key () in
   let device =
     Wglib.Wgapi.Interface.create ~name:"wgtest1" ~listen_port:1234 ~private_key

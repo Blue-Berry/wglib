@@ -129,7 +129,7 @@ module Allowed_ip = struct
             Ip.V6.of_octets_exn (ip_buf |> Buffer.to_seq |> String.of_seq)
           in
           Ip.V6 ip
-      | _ -> failwith "Invalid family"
+      | x -> failwith ("Invalid family: " ^ (x |> Int.to_string))
     in
     { ip; cidr }
 
@@ -209,6 +209,7 @@ module Endpoint = struct
       |> Unsigned.UInt16.to_int
     in
     match family with
+    | 0 -> None
     | x when x == af_local ->
         let addr = getf e Wg_endpoint.addr in
         let _sa_data =
@@ -240,9 +241,7 @@ module Endpoint = struct
             |> Array.map Char.chr |> Array.to_list |> Base.String.of_list)
         in
         Some { addr = `V6 addr; port }
-    | x ->
-        print_endline ("Failed" ^ (x |> Int.to_string));
-        failwith "Invalid family"
+    | x -> failwith ("Invalid family: " ^ (x |> Int.to_string))
 end
 
 module Peer = struct
