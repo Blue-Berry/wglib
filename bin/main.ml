@@ -18,7 +18,8 @@ let () =
     }
   in
   let peers =
-    List.init 80 (fun i ->
+    List.init 5 (fun i ->
+        let endpoint = Wglib.Wgapi.Endpoint.{ endpoint with port = 4321 + i } in
         Wglib.Wgapi.Peer.create
           ~public_key:
             Wglib.Wgapi.Key.(generate_private_key () |> generate_public_key)
@@ -29,12 +30,18 @@ let () =
   let private_key = Wglib.Wgapi.Key.generate_private_key () in
   let device =
     Wglib.Wgapi.Interface.create ~name:"wgtest1" ~listen_port:1234 ~private_key
-      ~peers ()
+      ~peers:[] ()
   in
   let err = Wglib.Wgapi.Interface.set_device device in
   let () =
     match err with
     | Ok () -> print_endline "Device set successfully"
+    | Error err ->
+        Wglib.Wgapi.Interface.DeviceError.to_string err |> print_endline
+  in
+  let () =
+    match Wglib.Wgapi.Interface.add_peers device peers with
+    | Ok () -> print_endline "Peers added successfully"
     | Error err ->
         Wglib.Wgapi.Interface.DeviceError.to_string err |> print_endline
   in

@@ -437,11 +437,13 @@ module Peer = struct
     cpeers
 
   let first_last_of_list (peers : t list) =
-    assert (List.is_empty peers |> not);
-    let cpeers = s_list_of_list peers in
-    let first = Base.List.hd_exn cpeers |> addr in
-    let last = Base.List.last_exn cpeers |> addr in
-    (first, last)
+    match List.is_empty peers with
+    | true -> (None, None)
+    | false ->
+        let cpeers = s_list_of_list peers in
+        let first = Base.List.hd_exn cpeers |> addr in
+        let last = Base.List.last_exn cpeers |> addr in
+        (Some first, Some last)
 
   (* TODO:
         - Need to be able to allocate a new peer in memory
@@ -561,8 +563,8 @@ module Interface = struct
     let () = setf cdevice Wg_device.flags (Unsigned.UInt32.of_int !flags) in
     (* set first and last peer *)
     let first_peer, last_peer = Peer.first_last_of_list device.peers in
-    let () = setf cdevice Wg_device.first_peer (Some first_peer) in
-    let () = setf cdevice Wg_device.last_peer (Some last_peer) in
+    let () = setf cdevice Wg_device.first_peer first_peer in
+    let () = setf cdevice Wg_device.last_peer last_peer in
     cdevice
 
   let of_wg_device cdevice =
@@ -646,11 +648,6 @@ module Interface = struct
     | 0 -> Ok (of_wg_device !@(!@cdevice))
     | _ -> Error "Failed to get device"
   (* Note: when sending peers they need to be stored in stable memory (bigarray, CArray, malloc, Ctypes.allocate) I assume Ctypes.make *)
-
-  (* Wireguard.Wg_device.Wg_device_flags.wgdevice_replace_peers <- Used to replace peers instead of adding them *)
-  (* Set device without the public key flag *)
-  let add_peers _device _peers = failwith "Not implemented"
-  let set_peers _device _peers = failwith "Not implemented"
 
   module DeviceError = struct
     (**
@@ -761,50 +758,64 @@ ERANGE		34	/* Math result not representable */
       | EPIPE -> "Broken pipe"
       | EDOM -> "Math argument out of domain of func"
       | ERANGE -> "Math result not representable"
+
+    let of_int i =
+      match i * -1 with
+      | 0 -> Ok ()
+      | 1 -> Error EPERM
+      | 2 -> Error ENOENT
+      | 3 -> Error ESRCH
+      | 4 -> Error EINTR
+      | 5 -> Error EIO
+      | 6 -> Error ENXIO
+      | 7 -> Error E2BIG
+      | 8 -> Error ENOEXEC
+      | 9 -> Error EBADF
+      | 10 -> Error ECHILD
+      | 11 -> Error EAGAIN
+      | 12 -> Error ENOMEM
+      | 13 -> Error EACCES
+      | 14 -> Error EFAULT
+      | 15 -> Error ENOTBLK
+      | 16 -> Error EBUSY
+      | 17 -> Error EEXIST
+      | 18 -> Error EXDEV
+      | 19 -> Error ENODEV
+      | 20 -> Error ENOTDIR
+      | 21 -> Error EISDIR
+      | 22 -> Error EINVAL
+      | 23 -> Error ENFILE
+      | 24 -> Error EMFILE
+      | 25 -> Error ENOTTY
+      | 26 -> Error ETXTBSY
+      | 27 -> Error EFBIG
+      | 28 -> Error ENOSPC
+      | 29 -> Error ESPIPE
+      | 30 -> Error EROFS
+      | 31 -> Error EMLINK
+      | 32 -> Error EPIPE
+      | 33 -> Error EDOM
+      | 34 -> Error ERANGE
+      | e -> failwith ("Unknown error: " ^ (e |> Int.to_string))
   end
 
   (* BUG: Cant add 90+ devices at once *)
   let set_device device =
     let cdevice = to_wg_device device in
     let res = wg_set_device (addr cdevice) in
-    match res * -1 with
-    | 0 -> Ok ()
-    | 1 -> Error DeviceError.EPERM
-    | 2 -> Error ENOENT
-    | 3 -> Error ESRCH
-    | 4 -> Error EINTR
-    | 5 -> Error EIO
-    | 6 -> Error ENXIO
-    | 7 -> Error E2BIG
-    | 8 -> Error ENOEXEC
-    | 9 -> Error EBADF
-    | 10 -> Error ECHILD
-    | 11 -> Error EAGAIN
-    | 12 -> Error ENOMEM
-    | 13 -> Error EACCES
-    | 14 -> Error EFAULT
-    | 15 -> Error ENOTBLK
-    | 16 -> Error EBUSY
-    | 17 -> Error EEXIST
-    | 18 -> Error EXDEV
-    | 19 -> Error ENODEV
-    | 20 -> Error ENOTDIR
-    | 21 -> Error EISDIR
-    | 22 -> Error EINVAL
-    | 23 -> Error ENFILE
-    | 24 -> Error EMFILE
-    | 25 -> Error ENOTTY
-    | 26 -> Error ETXTBSY
-    | 27 -> Error EFBIG
-    | 28 -> Error ENOSPC
-    | 29 -> Error ESPIPE
-    | 30 -> Error EROFS
-    | 31 -> Error EMLINK
-    | 32 -> Error EPIPE
-    | 33 -> Error EDOM
-    | 34 -> Error ERANGE
-    | e -> failwith ("Unknown error: " ^ (e |> Int.to_string))
+    DeviceError.of_int res
 
+  (* Wireguard.Wg_device.Wg_device_flags.wgdevice_replace_peers <- Used to replace peers instead of adding them *)
+  (* Set device without the public key flag *)
+  let add_peers device peers =
+    let device = { device with peers } in
+    let cdevice = to_wg_device device in
+    setf cdevice Wg_device.flags
+      (Unsigned.UInt32.of_int Wg_device.Wg_device_flags.wgdevice_replace_peers);
+    let res = wg_set_device (addr cdevice) in
+    DeviceError.of_int res
+
+  let set_peers _device _peers = failwith "Not implemented"
   let configure_peer _peer = failwith "Not implemented"
   let remove_peer _peer = failwith "Not implemented"
   let configure_peers _peers = failwith "Not implemented"

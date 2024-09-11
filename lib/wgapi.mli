@@ -83,8 +83,6 @@ module Interface : sig
     (Wireguard.Wg_device.wg_device, [ `Struct ]) Ctypes_static.structured -> t
 
   val get_device : string -> (t, string) result
-  val add_peers : 'a -> 'b -> 'c
-  val set_peers : 'a -> 'b -> 'c
 
   module DeviceError : sig
     type t =
@@ -124,9 +122,12 @@ module Interface : sig
       | ERANGE
 
     val to_string : t -> string
+    val of_int : int -> (unit, t) result
   end
 
   val set_device : t -> (unit, DeviceError.t) result
+  val add_peers : t -> Peer.t list -> (unit, DeviceError.t) result
+  val set_peers : 'a -> 'b -> 'c
   val configure_peer : 'a -> 'b
   val remove_peer : 'a -> 'b
   val configure_peers : 'a -> 'b
