@@ -341,7 +341,7 @@ module Peer = struct
     in
 
     (* Set flags *)
-    setf cpeer Wg_peer.flags (Unsigned.UInt16.of_int !flags);
+    setf cpeer Wg_peer.flags (Unsigned.UInt32.of_int !flags);
 
     (* Set endpoint *)
     let () =
@@ -355,7 +355,7 @@ module Peer = struct
     cpeer
 
   let of_wg_peer (peer : s) : t =
-    let flags = getf peer Wg_peer.flags |> Unsigned.UInt16.to_int in
+    let flags = getf peer Wg_peer.flags |> Unsigned.UInt32.to_int in
     let public_key : Key.t Option.t =
       match flags land Wg_peer.Wg_peer_flags.wgpeer_has_public_key with
       | 0 -> None
@@ -561,7 +561,7 @@ module Interface = struct
           flags := !flags lor Wg_device.Wg_device_flags.wgdevice_has_fwmark
     in
     (* Set flags *)
-    let () = setf cdevice Wg_device.flags (Unsigned.UInt16.of_int !flags) in
+    let () = setf cdevice Wg_device.flags (Unsigned.UInt32.of_int !flags) in
     (* set first and last peer *)
     let first_peer, last_peer = Peer.first_last_of_list device.peers in
     print_endline (ptr_diff first_peer last_peer |> Int.to_string);
@@ -581,7 +581,7 @@ module Interface = struct
         peers = [];
       }
     in
-    let flags = getf cdevice Wg_device.flags |> Unsigned.UInt16.to_int in
+    let flags = getf cdevice Wg_device.flags |> Unsigned.UInt32.to_int in
     (* Listen port *)
     let device =
       match flags land Wg_device.Wg_device_flags.wgdevice_has_listen_port with

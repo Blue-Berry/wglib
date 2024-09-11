@@ -94,8 +94,7 @@ module Wg_peer = struct
   type wg_peer
 
   let wg_peer : wg_peer structure typ = structure "wg_peer"
-  let flags = field wg_peer "flags" uint16_t
-  let _ = field wg_peer "buffer" uint16_t
+  let flags = field wg_peer "flags" uint32_t
   let public_key = Array.init 32 (fun _ -> field wg_peer "public_key" uchar)
 
   let preshared_key =
@@ -158,10 +157,9 @@ module Wg_device = struct
   let wg_device : wg_device structure typ = structure "wg_device"
   let name = Array.init 16 (fun _ -> field wg_device "name" char)
   let ifindex = field wg_device "ifindex" uint32_t
-  let flags = field wg_device "flags" uint16_t
+  let flags = field wg_device "flags" uint32_t
 
   (* NOTE: This fixes the issues of the public key being offset but I dont't know why I need this to fix it. The structure should be right. *)
-  let _ = field wg_device "buffer" uint16_t
 
   (* let public_key = field wg_device "public_key" wg_key *)
   let public_key = Array.init 32 (fun _ -> field wg_device "public_key" uchar)
