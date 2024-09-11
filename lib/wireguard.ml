@@ -95,6 +95,7 @@ module Wg_peer = struct
 
   let wg_peer : wg_peer structure typ = structure "wg_peer"
   let flags = field wg_peer "flags" uint16_t
+  let _ = field wg_peer "buffer" uint16_t
   let public_key = Array.init 32 (fun _ -> field wg_peer "public_key" uchar)
 
   let preshared_key =
