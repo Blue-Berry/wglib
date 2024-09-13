@@ -159,8 +159,6 @@ module Wg_device = struct
   let ifindex = field wg_device "ifindex" uint32_t
   let flags = field wg_device "flags" uint32_t
 
-  (* NOTE: This fixes the issues of the public key being offset but I dont't know why I need this to fix it. The structure should be right. *)
-
   (* let public_key = field wg_device "public_key" wg_key *)
   let public_key = Array.init 32 (fun _ -> field wg_device "public_key" uchar)
 
