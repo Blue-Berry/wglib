@@ -480,15 +480,6 @@ module Interface = struct
     peers : Peer.t List.t;
   }
 
-  module Config = struct
-    type t = {
-      name : string;
-      private_key : Key.t Option.t;
-      listen_port : int Option.t;
-      peers : Peer.t List.t;
-    }
-  end
-
   let create ~name ?(public_key : Key.t option) ?(private_key : Key.t option)
       ?(fwmark : int option) ?(listen_port : int option) ?peers () =
     let _ = Wireguard.wg_add_device name in
