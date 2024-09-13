@@ -411,14 +411,23 @@ module Peer = struct
       allowed_ips;
     }
 
-  let list_of_first_last (start : p) (stop : p) : t list =
+  (* let list_of_first_last (start : p) (stop : p) : t list = *)
+  (*   let rec loop acc current : s list = *)
+  (*     if current == stop then !@current :: acc *)
+  (*     else *)
+  (*       let next = getf !@current Wg_peer.next_peer in *)
+  (*       match next with *)
+  (*       | None -> acc *)
+  (*       | Some next -> loop (!@current :: acc) next *)
+  (*   in *)
+  (*   loop [] start |> List.map of_wg_peer *)
+
+  let list_of_first_last (start : p) (_stop : p) : t list =
     let rec loop acc current : s list =
-      if current == stop then !@current :: acc
-      else
-        let next = getf !@current Wg_peer.next_peer in
-        match next with
-        | None -> acc
-        | Some next -> loop (!@current :: acc) next
+      let next = getf !@current Wg_peer.next_peer in
+      match next with
+      | None -> !@current :: acc
+      | Some next -> loop (!@current :: acc) next
     in
     loop [] start |> List.map of_wg_peer
 
@@ -640,7 +649,6 @@ module Interface = struct
     | _, None -> device
     | None, _ -> device
 
-  (* BUG: getting peer list gets x-1 peers *)
   let get_device name =
     let cdevice = make Wg_device.wg_device in
     let cdevice = allocate (ptr Wg_device.wg_device) (addr cdevice) in
