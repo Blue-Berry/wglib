@@ -164,6 +164,7 @@ end
 module Endpoint = struct
   open Ctypes
 
+  (* TODO: add support for unix sockets *)
   type t = { addr : [ `V4 of Ipaddr.V4.t | `V6 of Ipaddr.V6.t ]; port : int }
   (* Unix.ADDR_UNIX *)
 
@@ -453,13 +454,6 @@ module Peer = struct
         let first = Base.List.hd_exn cpeers |> addr in
         let last = Base.List.last_exn cpeers |> addr in
         (Some first, Some last)
-
-  (* TODO:
-        - Need to be able to allocate a new peer in memory
-        - Need to construct a list
-        - Remove a peer
-        - Set allowed Ips
-        - add allowed ips *)
 end
 
 module Interface = struct
@@ -830,8 +824,6 @@ ERANGE		34	/* Math result not representable */
       (Unsigned.UInt32.of_int Wg_device.Wg_device_flags.wgdevice_replace_peers);
     wg_set_device (addr cdevice) |> DeviceError.of_int
 
-  let configure_peer _peer = failwith "Not implemented"
-  let remove_peer _peer = failwith "Not implemented"
   let configure_peers _peers = failwith "Not implemented"
 
   let remove_peers device peers =

@@ -8,7 +8,7 @@ module Sockaddr = struct
   let sa_family = field sockaddr "sa_family" uint16_t
 
   (* let sa_data = field sockaddr "sa_data" (array 14 uint8_t) *)
-  let sa_data = Array.init 14 (fun _ -> field sockaddr "sa_data" uint8_t)
+  let sa_data = Array.init 14 (fun _ -> field sockaddr "sa_data" Ctypes.char)
   let () = seal sockaddr
 end
 
