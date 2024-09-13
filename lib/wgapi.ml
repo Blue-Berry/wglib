@@ -640,6 +640,7 @@ module Interface = struct
     | _, None -> device
     | None, _ -> device
 
+  (* BUG: getting peer list gets x-1 peers *)
   let get_device name =
     let cdevice = make Wg_device.wg_device in
     let cdevice = allocate (ptr Wg_device.wg_device) (addr cdevice) in
@@ -824,5 +825,21 @@ ERANGE		34	/* Math result not representable */
   let configure_peer _peer = failwith "Not implemented"
   let remove_peer _peer = failwith "Not implemented"
   let configure_peers _peers = failwith "Not implemented"
-  let remove_peers _pers = failwith "Not impolemented"
+
+  let remove_peers device peers =
+    assert (not (List.is_empty peers));
+    let peers = Peer.s_list_of_list peers in
+    let () =
+      List.iter
+        (fun p ->
+          setf p Wg_peer.flags
+            (Wg_peer.Wg_peer_flags.wgpeer_remove_me |> Unsigned.UInt32.of_int))
+        peers
+    in
+    let cdevice = to_wg_device device in
+    setf cdevice Wg_device.flags (Unsigned.UInt32.of_int 0);
+    let first_peer, last_peer = Base.(List.hd_exn peers, List.last_exn peers) in
+    setf cdevice Wg_device.first_peer (Some (addr first_peer));
+    setf cdevice Wg_device.last_peer (Some (addr last_peer));
+    wg_set_device (addr cdevice) |> DeviceError.of_int
 end

@@ -131,5 +131,5 @@ module Interface : sig
   val configure_peer : 'a -> 'b
   val remove_peer : 'a -> 'b
   val configure_peers : 'a -> 'b
-  val remove_peers : 'a -> 'b
+  val remove_peers : t -> Peer.t list -> (unit, DeviceError.t) result
 end

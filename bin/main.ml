@@ -44,7 +44,7 @@ let () =
       | 0 -> ()
       | n ->
           let new_peers =
-            List.init 20 (fun i ->
+            List.init 1 (fun i ->
                 let endpoint =
                   Wglib.Wgapi.Endpoint.{ endpoint with port = 4321 + i }
                 in
@@ -64,16 +64,13 @@ let () =
           in
           loop (n - 1)
     in
-    loop 50
+    loop 3
   in
 
-  (* Unix.sleep 5; *)
-  (* let () = *)
-  (*   match Wglib.Wgapi.Interface.set_peers device [] with *)
-  (*   | Ok () -> print_endline "Peers removed successfully" *)
-  (*   | Error err -> *)
-  (*       Wglib.Wgapi.Interface.DeviceError.to_string err |> print_endline *)
-  (* in *)
+  Unix.sleep 5;
   let device = Wglib.Wgapi.Interface.get_device "wgtest1" |> Result.get_ok in
+  let () =
+    Wglib.Wgapi.Interface.remove_peers device device.peers |> Result.get_ok
+  in
   print_endline ("Peers: " ^ Int.to_string (List.length device.peers));
   ()
