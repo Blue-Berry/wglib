@@ -66,3 +66,29 @@ let () =
   print_endline ("Peers: " ^ Int.to_string (List.length device.peers));
   ()
 ;;
+
+(* Test creating device module *)
+let () = 
+  let open Wglib.Device in
+  let private_key = Wglib.Wgapi.Key.generate_private_key () in
+  let device = new_device ~name:"wgtest2" ~listen_port:1234 ~private_key () |> Result.get_ok in
+  let module Device = (val device : Wglib.Device.Device) in
+   let rec loop = function
+      | 0 -> ()
+      | n ->
+        let new_peers =
+          List.init 1 (fun _ ->
+            Wglib.Wgapi.Peer.create
+              ~public_key:Wglib.Wgapi.Key.(generate_private_key () |> generate_public_key)
+              ())
+        in
+        let () =
+          match Device.add_peers new_peers with
+          | Ok () -> print_endline "Peers added successfully"
+          | Error err -> Wglib.Wgapi.Interface.DeviceError.to_string err |> print_endline
+        in
+        loop (n - 1)
+    in
+    loop 3
+  in
+  ()
