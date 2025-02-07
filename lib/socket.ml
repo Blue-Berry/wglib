@@ -36,9 +36,7 @@ module Sockaddr_in6 = struct
   let sin6_flowinfo = field sockaddr_in6 "sin6_flowinfo" uint32_t
 
   (* let sin6_addr = field sockaddr_in6 "sin6_addr" (array 16 uint8_t) *)
-  let sin6_addr =
-    Array.init 16 (fun _ -> field sockaddr_in6 "sin6_addr" uint8_t)
-
+  let sin6_addr = Array.init 16 (fun _ -> field sockaddr_in6 "sin6_addr" uint8_t)
   let sin6_scope_id = field sockaddr_in6 "sin6_scope_id" uint32_t
   let () = seal sockaddr_in6
 end

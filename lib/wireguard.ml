@@ -73,10 +73,7 @@ module Wg_peer = struct
     let family = field wg_allowedip "family" uint16_t
     let ip = field wg_allowedip "ip" ip_union
     let cidr = field wg_allowedip "cidr" uint8_t
-
-    let next_allowedip =
-      field wg_allowedip "next_allowedip" (ptr_opt wg_allowedip)
-
+    let next_allowedip = field wg_allowedip "next_allowedip" (ptr_opt wg_allowedip)
     let () = seal wg_allowedip
   end
 
@@ -96,27 +93,18 @@ module Wg_peer = struct
   let wg_peer : wg_peer structure typ = structure "wg_peer"
   let flags = field wg_peer "flags" uint32_t
   let public_key = Array.init 32 (fun _ -> field wg_peer "public_key" uchar)
-
-  let preshared_key =
-    Array.init 32 (fun _ -> field wg_peer "preshared_key" uchar)
-
+  let preshared_key = Array.init 32 (fun _ -> field wg_peer "preshared_key" uchar)
   let endpoint = field wg_peer "endpoint" Wg_endpoint.wg_endpoint
-
-  let last_handshake_time =
-    field wg_peer "last_handshake_time" TimeSpec64.timespec64
-
+  let last_handshake_time = field wg_peer "last_handshake_time" TimeSpec64.timespec64
   let rx_bytes = field wg_peer "rx_bytes" uint64_t
   let tx_bytes = field wg_peer "tx_bytes" uint64_t
 
   let persistent_keepalive_interval =
     field wg_peer "persistent_keepalive_interval" uint16_t
+  ;;
 
-  let first_allowedip =
-    field wg_peer "first_allowedip" (ptr_opt AllowedIp.wg_allowedip)
-
-  let last_allowedip =
-    field wg_peer "last_allowedip" (ptr_opt AllowedIp.wg_allowedip)
-
+  let first_allowedip = field wg_peer "first_allowedip" (ptr_opt AllowedIp.wg_allowedip)
+  let last_allowedip = field wg_peer "last_allowedip" (ptr_opt AllowedIp.wg_allowedip)
   let next_peer = field wg_peer "next_peer" (ptr_opt wg_peer)
   let () = seal wg_peer
 
@@ -193,35 +181,37 @@ let wg_set_device = foreign "wg_set_device" (ptr wg_device @-> returning int)
 
 let wg_get_device =
   foreign "wg_get_device" (ptr (ptr wg_device) @-> string @-> returning int)
+;;
 
 let wg_add_device = foreign "wg_add_device" (string @-> returning int)
 let wg_del_device = foreign "wg_del_device" (string @-> returning int)
 let wg_free_device = foreign "wg_free_device" (wg_device @-> returning void)
-
-let wg_list_device_names =
-  foreign "wg_list_device_names" (void @-> returning string)
+let wg_list_device_names = foreign "wg_list_device_names" (void @-> returning string)
 
 (* void wg_key_to_base64(wg_key_b64_string base64, const wg_key key); *)
 (* int wg_key_from_base64(wg_key key, const wg_key_b64_string base64); *)
 (* bool wg_key_is_zero(const wg_key key); *)
 
 let wg_generate_public_key =
-  foreign "wg_generate_public_key"
+  foreign
+    "wg_generate_public_key"
     (wg_key @-> Ctypes_static.const wg_key @-> returning void)
+;;
 
-let wg_generate_private_key =
-  foreign "wg_generate_private_key" (wg_key @-> returning void)
+let wg_generate_private_key = foreign "wg_generate_private_key" (wg_key @-> returning void)
 
 let wg_generate_preshared_key =
   foreign "wg_generate_preshared_key" (wg_key @-> returning void)
+;;
 
 (* void wg_key_to_base64(wg_key_b64_string base64, const wg_key key); *)
 let wg_key_to_base64 =
-  foreign "wg_key_to_base64"
-    (ptr Ctypes.char @-> Ctypes.const wg_key @-> returning void)
+  foreign "wg_key_to_base64" (ptr Ctypes.char @-> Ctypes.const wg_key @-> returning void)
+;;
 
 (* int wg_key_from_base64(wg_key key, const wg_key_b64_string base64); *)
 let wg_key_from_base64 =
   foreign "wg_key_from_base64" (wg_key @-> ptr Ctypes.char @-> returning int)
+;;
 
 let wg_device_new = foreign "wg_device_new" (void @-> returning (ptr wg_device))
